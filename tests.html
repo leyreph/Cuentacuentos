@@ -36,6 +36,7 @@
 <body>
 <h1>🧪 Tests — Cuentacuentos</h1>
 <p class="sub">Ejecuta todos los tests antes de publicar una nueva versión del HTML</p>
+<div id="env-banner" style="border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;font-family:'Nunito',sans-serif;font-weight:700"></div>
 
 <div id="apikey-row">
   <input id="key-in" type="password" placeholder="sk-or-v1-... (para tests de red)"/>
@@ -59,7 +60,7 @@
 const KEY_LS="cc_openrouter_key";
 function getKey(){return localStorage.getItem(KEY_LS)||"";}
 function saveTestKey(){const v=document.getElementById("key-in").value.trim();if(v)localStorage.setItem(KEY_LS,v);document.getElementById("key-in").value="";document.getElementById("key-in").placeholder="✓ API Key guardada";}
-window.onload=()=>{if(getKey())document.getElementById("key-in").placeholder="✓ API Key ya guardada";};
+window.onload=()=>{if(getKey())document.getElementById("key-in").placeholder="✓ API Key ya guardada"; detectEnv();};
 
 const PROFILES=[{id:1,name:"Nerea",avatar:"👧",color:"#FF6B9D",bg:"#FFE4F0",mode:"child"},{id:2,name:"Darío",avatar:"👦",color:"#4ECDC4",bg:"#E0F7F5",mode:"baby"},{id:3,name:"Tiago",avatar:"🧒",color:"#FFB347",bg:"#FFF3E0",mode:"baby"}];
 const CATS=[{id:"cartoons",label:"Dibujos Animados",emoji:"📺",color:"#FF6B9D"},{id:"disney",label:"Disney",emoji:"🏰",color:"#9B59B6"},{id:"superheroes",label:"Superhéroes",emoji:"🦸",color:"#E74C3C"},{id:"paw",label:"Patrulla Canina",emoji:"🐾",color:"#3498DB"},{id:"sports",label:"Deportes",emoji:"⚽",color:"#2ECC71"},{id:"travel",label:"Viajes",emoji:"✈️",color:"#F39C12"}];
@@ -166,7 +167,8 @@ test("fetch disponible","El navegador debe soportar fetch API",()=>{
 // ── TESTS DE RED (necesitan API key) ──
 test("Ping a OpenRouter","Verifica que openrouter.ai responde sin gastar créditos",async()=>{
   const key=getKey(); if(!key)return "SKIP: sin API Key";
-  const res=await fetch("https://openrouter.ai/api/v1/models",{headers:{"Authorization":"Bearer "+key}});
+  const headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"};
+  const res=await fetch("https://openrouter.ai/api/v1/models",{method:"GET",headers,mode:"cors"});
   if(res.status===401)throw new Error("API Key inválida (401)");
   if(!res.ok)throw new Error("HTTP "+res.status);
   const d=await res.json();
@@ -175,7 +177,8 @@ test("Ping a OpenRouter","Verifica que openrouter.ai responde sin gastar crédit
 
 test("Modelos disponibles en catálogo","Al menos 1 de los 4 modelos configurados debe estar activo",async()=>{
   const key=getKey(); if(!key)return "SKIP: sin API Key";
-  const res=await fetch("https://openrouter.ai/api/v1/models",{headers:{"Authorization":"Bearer "+key}});
+  const headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"};
+  const res=await fetch("https://openrouter.ai/api/v1/models",{method:"GET",headers,mode:"cors"});
   if(!res.ok)throw new Error("HTTP "+res.status);
   const d=await res.json();
   const ids=(d.data||[]).map(m=>m.id);
@@ -189,11 +192,11 @@ test("Generación real de cuento","Genera un cuento corto y valida el JSON de re
   const prompt='Crea el INICIO de un cuento para Nerea con Peppa Pig. Frases muy cortas.\nRESPONDE SOLO EN JSON:\n{"title":"T","paragraphs":["p1"],"question":"Q","choices":[{"emoji":"🌟","text":"A"},{"emoji":"🌈","text":"B"},{"emoji":"⭐","text":"C"}]}';
   const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
   const headers={"Content-Type":"application/json","Authorization":"Bearer "+key};
-  if(!isIOS)headers["HTTP-Referer"]=window.location.origin||"https://cuentacuentos.app";
+  // No añadir HTTP-Referer en iOS — causa "Load failed" en Safari
   let lastErr="Sin respuesta";
   for(const model of MODELS){
     try{
-      const res=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers,body:JSON.stringify({model,max_tokens:400,messages:[{role:"user",content:prompt}]})});
+      const res=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers,mode:"cors",body:JSON.stringify({model,max_tokens:400,messages:[{role:"user",content:prompt}]})});
       if(!res.ok){lastErr="HTTP "+res.status+" con "+model;continue;}
       const d=await res.json();
       const txt=d.choices?.[0]?.message?.content||"";
@@ -206,6 +209,38 @@ test("Generación real de cuento","Genera un cuento corto y valida el JSON de re
   }
   throw new Error("Todos los modelos fallaron. Último: "+lastErr);
 },{needsNet:true});
+
+// ── DETECCIÓN DE ENTORNO ──
+function detectEnv(){
+  const isFile = window.location.protocol === "file:";
+  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const isGH = window.location.hostname.includes("github.io");
+  const isClaude = window.location.hostname.includes("claude.ai");
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const banner = document.getElementById("env-banner");
+  
+  if(isFile || isClaude){
+    banner.style.background="#FF6B9D22";
+    banner.style.border="2px solid #FF6B9D66";
+    banner.style.color="#FF6B9D";
+    banner.innerHTML="⚠️ Abriendo desde "+( isClaude?"Claude.ai":"archivo local")+". Los tests de red 🌐 <strong>fallarán</strong> en iOS Safari por restricciones de seguridad. <strong>Sube tests.html a GitHub Pages para tests completos.</strong>";
+  } else if(isGH || isLocal){
+    banner.style.background="#4ECDC422";
+    banner.style.border="2px solid #4ECDC466";
+    banner.style.color="#4ECDC4";
+    banner.innerHTML="✅ Ejecutando desde <strong>"+(isGH?"GitHub Pages":"localhost")+"</strong>. Todos los tests funcionarán correctamente.";
+  } else {
+    banner.style.background="#FFB34722";
+    banner.style.border="2px solid #FFB34766";
+    banner.style.color="#FFB347";
+    banner.innerHTML="🌐 Entorno: <strong>"+window.location.hostname+"</strong>. Los tests de red deberían funcionar.";
+  }
+
+  // Marcar tests de red como skip si estamos en entorno problemático
+  if((isFile||isClaude)&&isIOS){
+    TESTS.forEach(t=>{ if(t.needsNet) t._forceSkip="No disponible en iOS Safari desde "+( isClaude?"Claude":"archivo local")+". Sube a GitHub Pages."; });
+  }
+}
 
 // ── RUNNER ──
 let R={pass:0,fail:0,skip:0};
@@ -225,6 +260,7 @@ async function runAll(){
     let status="pass",msg="",detail="";
     const t0=Date.now();
     try{
+      if(t._forceSkip){ R.skip++; updateCard(card,"skip","⏭️ Omitido",t._forceSkip,0); document.getElementById("progress-fill").style.width=((i+1)/TESTS.length*100)+"%"; await new Promise(r=>setTimeout(r,30)); continue; }
       const r=await t.fn();
       if(typeof r==="string"&&r.startsWith("SKIP:")){status="skip";msg="⏭️ Omitido";detail=r.replace("SKIP:","").trim();}
       else{status="pass";msg="✅ Pasado";detail=r||"";}
