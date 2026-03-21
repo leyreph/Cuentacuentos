@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Cuentacuentos ✨</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;font-size:16px}
+    body{max-width:500px;margin:0 auto;background:#f5f5f5}
+    @keyframes fadeSlide{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    @keyframes twinkle{0%,100%{opacity:0.1}50%{opacity:0.3}}
+    @keyframes wavebar{from{height:5px}to{height:20px}}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    input:focus{outline:none}
+    .screen{display:none}.screen.active{display:block}
+    .stars-bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+    .star{position:absolute;opacity:0.15;animation:twinkle var(--dur) ease-in-out var(--delay) infinite}
+    .profile-btn{background:rgba(255,255,255,0.95);border:none;border-radius:28px;padding:15px 20px;display:flex;align-items:center;gap:15px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,0.15);transition:transform 0.15s,box-shadow 0.15s;width:100%}
+    .profile-btn:hover{transform:scale(1.03);box-shadow:0 12px 32px rgba(0,0,0,0.2)}
+    .profile-btn:active{transform:scale(0.98)}
+    .card-btn{background:white;border:3px solid var(--c);border-radius:24px;padding:20px 12px;cursor:pointer;box-shadow:0 6px 0 var(--s);transition:all 0.1s;display:flex;flex-direction:column;align-items:center;gap:8px}
+    .card-btn:active{transform:translateY(3px);box-shadow:0 3px 0 var(--s)}
+    .action-btn{border:none;border-radius:var(--r,24px);padding:var(--p,15px 20px);font-family:'Fredoka One',cursive;font-size:var(--f,19px);color:white;cursor:pointer;background:var(--bg);box-shadow:0 6px 0 var(--sh),0 8px 20px var(--gl);transition:all 0.1s;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;user-select:none;touch-action:manipulation}
+    .action-btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--sh)!important}
+    .action-btn:disabled{background:#ccc!important;box-shadow:none!important;cursor:default}
+    .choice-btn{border:none;border-radius:20px;padding:15px 16px;cursor:pointer;display:flex;align-items:center;gap:13px;box-shadow:0 6px 0 var(--sh);transition:all 0.1s;width:100%}
+    .choice-btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--sh)}
+    .para-card{background:white;border-radius:20px;padding:15px 20px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,0.08);animation:fadeSlide 0.5s ease}
+    .para-baby{border-radius:24px;padding:17px 20px;margin-bottom:13px;background:white;box-shadow:0 6px 20px rgba(0,0,0,0.08);border:3px solid transparent;cursor:pointer;transition:all 0.3s;animation:fadeSlide 0.5s ease}
+    .para-baby.speaking{background:#daf4f2;border-color:#4ECDC4}
+    .wave-bars{display:flex;gap:4px;align-items:flex-end;margin-bottom:8px}
+    .wave-bar{width:5px;height:14px;background:#4ECDC4;border-radius:3px;animation:wavebar 0.6s ease-in-out infinite alternate}
+    .hidden{display:none!important}
+    #fab{position:fixed;bottom:28px;right:20px;z-index:100;border:none;border-radius:50%;width:64px;height:64px;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+    #fab.idle{background:linear-gradient(135deg,#4ECDC4,#44b8af);box-shadow:0 6px 20px rgba(78,205,196,0.5)}
+    #fab.speaking{background:linear-gradient(135deg,#FF6B9D,#ff8fb3);box-shadow:0 6px 20px rgba(255,107,157,0.5);animation:pulse 1s ease-in-out infinite}
+    #home-fab{position:fixed;top:18px;right:18px;z-index:100;border:none;border-radius:50%;width:46px;height:46px;font-size:21px;cursor:pointer;background:rgba(255,255,255,0.88);box-shadow:0 4px 14px rgba(0,0,0,0.18);display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+    #home-fab:active{transform:scale(0.9)}
+    /* API Key overlay */
+    #apikey-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px}
+    #apikey-overlay.hidden{display:none}
+    #apikey-box{background:white;border-radius:28px;padding:28px 22px;width:100%;max-width:400px;box-shadow:0 16px 48px rgba(0,0,0,0.3);animation:fadeSlide 0.3s ease}
+  </style>
+</head>
+<body>
+
+<!-- ====== API KEY OVERLAY ====== -->
+<div id="apikey-overlay">
+  <div id="apikey-box">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:56px">🔑</div>
+      <h2 style="font-family:'Fredoka One',cursive;font-size:24px;color:#333;margin:8px 0 6px">Configura la app</h2>
+      <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#666;line-height:1.6">
+        Esta app usa IA para crear los cuentos.<br>
+        Necesitas una clave <strong>gratuita</strong> de OpenRouter.<br><br>
+        1️⃣ Ve a <a href="https://openrouter.ai/keys" target="_blank" style="color:#A78BFA;font-weight:800">openrouter.ai/keys</a><br>
+        2️⃣ Crea una cuenta (gratis)<br>
+        3️⃣ Crea una API Key<br>
+        4️⃣ Pégala aquí abajo 👇
+      </p>
+    </div>
+    <input id="key-input" type="password" placeholder="sk-or-v1-..." maxlength="300"
+      oninput="checkKey()" onkeydown="if(event.key==='Enter')saveKey()"
+      style="width:100%;border:3px solid #A78BFA;border-radius:16px;padding:12px 15px;font-size:15px;font-family:'Nunito',sans-serif;color:#333;margin-bottom:10px" />
+    <p style="font-family:'Nunito',sans-serif;font-size:12px;color:#aaa;text-align:center;margin-bottom:14px">
+      🔒 Se guarda solo en este dispositivo. Plan gratuito de OpenRouter incluye modelos sin coste.
+    </p>
+    <button id="save-key-btn" onclick="saveKey()" disabled
+      style="width:100%;background:#ddd;border:none;border-radius:16px;padding:13px;font-family:'Fredoka One',cursive;font-size:18px;color:white;cursor:default;transition:all 0.2s;margin-bottom:8px">
+      ¡Guardar y empezar! 🚀
+    </button>
+    <button onclick="closeKeyOverlay()" id="skip-key-btn" class="hidden"
+      style="width:100%;background:none;border:none;font-family:'Nunito',sans-serif;font-size:14px;color:#bbb;cursor:pointer">
+      Ya tengo la clave guardada — continuar
+    </button>
+  </div>
+</div>
+
+<!-- ====== SCREEN: PROFILES ====== -->
+<div id="screen-profiles" class="screen active">
+  <div style="min-height:100vh;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative">
+    <div class="stars-bg" id="st-profiles"></div>
+    <div style="position:relative;z-index:1;width:100%;max-width:420px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:72px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3))">📖</div>
+        <h1 style="font-family:'Fredoka One',cursive;font-size:36px;color:white;margin:6px 0 0;text-shadow:0 3px 12px rgba(0,0,0,0.3)">Cuentacuentos ✨</h1>
+        <p style="font-family:'Nunito',sans-serif;color:rgba(255,255,255,0.9);font-size:17px;margin:6px 0 0">¿Quién va a leer hoy? 🌟</p>
+      </div>
+      <div id="profiles-list" style="display:flex;flex-direction:column;gap:13px;margin-bottom:13px"></div>
+
+      <!-- Custom profile -->
+      <div id="custom-toggle">
+        <button onclick="showCustom()"
+          style="width:100%;background:rgba(255,255,255,0.18);border:3px dashed rgba(255,255,255,0.6);border-radius:28px;padding:15px 20px;display:flex;align-items:center;gap:15px;cursor:pointer"
+          onmouseenter="this.style.background='rgba(255,255,255,0.28)'" onmouseleave="this.style.background='rgba(255,255,255,0.18)'">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:28px;border:3px dashed rgba(255,255,255,0.6);flex-shrink:0">➕</div>
+          <div>
+            <div style="font-size:20px;color:white;font-family:'Fredoka One',cursive">Otro niño</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.8);font-family:'Nunito',sans-serif;font-weight:700">¡Escribe tu nombre! ✏️</div>
+          </div>
+        </button>
+      </div>
+
+      <div id="custom-form" class="hidden" style="background:rgba(255,255,255,0.97);border-radius:28px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.15);animation:fadeSlide 0.3s ease">
+        <p style="font-family:'Fredoka One',cursive;font-size:18px;color:#333;margin:0 0 11px;text-align:center">¿Cómo te llamas? ✏️</p>
+        <input id="cname" type="text" placeholder="Escribe tu nombre..." maxlength="20"
+          oninput="checkCustom()" onkeydown="if(event.key==='Enter')submitCustom()"
+          style="width:100%;border:3px solid #A78BFA;border-radius:16px;padding:11px 15px;font-size:20px;font-family:'Fredoka One',cursive;color:#333;margin-bottom:13px" />
+        <p style="font-family:'Fredoka One',cursive;font-size:15px;color:#555;margin:0 0 9px;text-align:center">¿Qué modo quieres?</p>
+        <div style="display:flex;gap:10px;margin-bottom:13px">
+          <button id="mb-child" onclick="setCustomMode('child')" style="flex:1;background:#FFE4F0;border:3px solid #FF6B9D;border-radius:18px;padding:11px 6px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:15px;color:#FF6B9D;transition:all 0.15s">📚 Niño</button>
+          <button id="mb-baby"  onclick="setCustomMode('baby')"  style="flex:1;background:#E0F7F5;border:3px solid #4ECDC4;border-radius:18px;padding:11px 6px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:15px;color:#4ECDC4;transition:all 0.15s">🌟 Bebé</button>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button onclick="hideCustom()" style="flex:1;background:#eee;border:none;border-radius:16px;padding:11px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:15px;color:#888">⬅️ Volver</button>
+          <button id="custom-ok" onclick="submitCustom()" disabled style="flex:2;background:#ddd;border:none;border-radius:16px;padding:11px;font-family:'Fredoka One',cursive;font-size:16px;color:white;cursor:default;transition:all 0.15s">¡Empezar! 🚀</button>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:14px">
+        <button onclick="openKeyOverlay()" id="key-status-btn"
+          style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);border-radius:20px;padding:7px 16px;font-family:'Nunito',sans-serif;font-size:13px;color:rgba(255,255,255,0.85);cursor:pointer">
+          🔑 Configurar API Key
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCREEN: CATEGORY ====== -->
+<div id="screen-category" class="screen">
+  <div style="min-height:100vh;background:linear-gradient(180deg,#FFF9F0,#FFE4B5);padding:24px 20px;position:relative">
+    <div class="stars-bg" id="st-category"></div>
+    <div style="max-width:440px;margin:0 auto;position:relative;z-index:1">
+      <div style="text-align:center;margin-bottom:26px">
+        <div id="cat-av" style="font-size:52px"></div>
+        <h2 id="cat-hi" style="font-family:'Fredoka One',cursive;font-size:27px;color:#333;margin:8px 0 4px"></h2>
+        <p style="font-family:'Nunito',sans-serif;color:#888;font-size:15px;margin:0">¿Qué tipo de cuento quieres?</p>
+      </div>
+      <div id="cat-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px"></div>
+      <button class="action-btn" style="--bg:#aaa;--sh:#88888888;--gl:#aaaaaa22;--r:16px;--p:10px 18px;--f:16px" onclick="goTo('profiles')">
+        <span style="font-size:20px">⬅️</span> Volver
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCREEN: CHARACTER ====== -->
+<div id="screen-character" class="screen">
+  <div id="char-wrap" style="min-height:100vh;padding:24px 20px;position:relative">
+    <div class="stars-bg" id="st-character"></div>
+    <div style="max-width:440px;margin:0 auto;position:relative;z-index:1">
+      <div style="text-align:center;margin-bottom:26px">
+        <div id="char-cat-em" style="font-size:52px"></div>
+        <h2 style="font-family:'Fredoka One',cursive;font-size:27px;color:#333;margin:8px 0 4px">¡Elige tu personaje! ✨</h2>
+        <p style="font-family:'Nunito',sans-serif;color:#888;font-size:15px;margin:0">¿Quién será el protagonista?</p>
+      </div>
+      <div id="char-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px"></div>
+      <button class="action-btn" style="--bg:#aaa;--sh:#88888888;--gl:#aaaaaa22;--r:16px;--p:10px 18px;--f:16px" onclick="goTo('category')">
+        <span style="font-size:20px">⬅️</span> Volver
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCREEN: STORY ====== -->
+<div id="screen-story" class="screen">
+  <div id="story-wrap" style="min-height:100vh;padding-bottom:130px">
+
+    <button id="home-fab" onclick="goHome()" title="Inicio">🏠</button>
+
+    <!-- Header -->
+    <div id="story-head" style="padding:20px 20px 26px;border-radius:0 0 32px 32px;box-shadow:0 8px 24px rgba(0,0,0,0.15)">
+      <!-- child header -->
+      <div id="head-child" style="display:flex;align-items:center;gap:12px;max-width:400px;margin:0 auto">
+        <div id="hc-em" style="font-size:36px"></div>
+        <div>
+          <h1 id="hc-title" style="font-family:'Fredoka One',cursive;font-size:20px;color:white;margin:0;text-shadow:0 2px 8px rgba(0,0,0,0.2)"></h1>
+          <div id="hc-meta" style="font-family:'Nunito',sans-serif;font-size:13px;color:rgba(255,255,255,0.9);font-weight:700"></div>
+        </div>
+      </div>
+      <!-- baby header -->
+      <div id="head-baby" class="hidden" style="max-width:440px;margin:0 auto;text-align:center">
+        <div id="hb-em" style="font-size:60px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2))"></div>
+        <h1 id="hb-title" style="font-family:'Fredoka One',cursive;font-size:23px;color:white;margin:8px 0 4px;text-shadow:0 2px 8px rgba(0,0,0,0.2)"></h1>
+        <div id="hb-meta" style="font-family:'Nunito',sans-serif;font-size:14px;color:rgba(255,255,255,0.95);font-weight:700"></div>
+      </div>
+    </div>
+
+    <div id="story-content" style="max-width:440px;margin:0 auto;padding:22px 20px"></div>
+
+    <div id="story-load" class="hidden" style="text-align:center;padding:32px">
+      <div id="load-em" style="font-size:56px" class="bounce-el">✍️</div>
+      <p id="load-txt" style="font-family:'Fredoka One',cursive;font-size:22px;color:#888;margin-top:8px">Escribiendo el cuento...</p>
+    </div>
+
+    <div id="story-choices" class="hidden" style="max-width:440px;margin:0 auto;padding:0 20px 20px;animation:fadeSlide 0.5s ease"></div>
+
+    <div id="story-end" class="hidden" style="max-width:440px;margin:20px auto;padding:0 20px;animation:fadeSlide 0.5s ease">
+      <div id="end-inner" style="border-radius:28px;padding:24px;text-align:center;background:linear-gradient(135deg,#FFD700,#FFA500);box-shadow:0 8px 24px rgba(0,0,0,0.12)">
+        <div id="end-em" style="font-size:64px">🌟</div>
+        <p id="end-txt" style="font-family:'Fredoka One',cursive;font-size:26px;color:white;margin:8px 0 16px">¡Muy bien!</p>
+        <button class="action-btn" style="--bg:white;--sh:#ddddddaa;--gl:#ffffff22" onclick="goHome()">
+          <span style="font-size:28px">🏠</span><span style="color:#FF6B9D">¡Otro cuento!</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="scroll-anchor"></div>
+    <button id="fab" class="idle hidden" onclick="toggleTTS()">🔊</button>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const PROFILES = [
+  {id:1,name:"Nerea",avatar:"👧",color:"#FF6B9D",bg:"#FFE4F0",mode:"child"},
+  {id:2,name:"Darío",avatar:"👦",color:"#4ECDC4",bg:"#E0F7F5",mode:"baby"},
+  {id:3,name:"Tiago",avatar:"🧒",color:"#FFB347",bg:"#FFF3E0",mode:"baby"},
+];
+const CATS = [
+  {id:"cartoons",    label:"Dibujos Animados",emoji:"📺",color:"#FF6B9D"},
+  {id:"disney",      label:"Disney",          emoji:"🏰",color:"#9B59B6"},
+  {id:"superheroes", label:"Superhéroes",      emoji:"🦸",color:"#E74C3C"},
+  {id:"paw",         label:"Patrulla Canina",  emoji:"🐾",color:"#3498DB"},
+  {id:"sports",      label:"Deportes",         emoji:"⚽",color:"#2ECC71"},
+  {id:"travel",      label:"Viajes",           emoji:"✈️",color:"#F39C12"},
+];
+const CHARS = {
+  cartoons:    [{id:"peppa",name:"Peppa Pig",em:"🐷"},{id:"bluey",name:"Bluey",em:"🐕"},{id:"bob",name:"Bob Esponja",em:"🧽"},{id:"tom",name:"Tom y Jerry",em:"🐱"}],
+  disney:      [{id:"elsa",name:"Elsa",em:"❄️"},{id:"simba",name:"Simba",em:"🦁"},{id:"moana",name:"Moana",em:"🌊"},{id:"buzz",name:"Buzz Lightyear",em:"🚀"}],
+  superheroes: [{id:"spidey",name:"Spider-Man",em:"🕷️"},{id:"batman",name:"Batman",em:"🦇"},{id:"wonder",name:"Wonder Woman",em:"⭐"},{id:"super",name:"Superman",em:"🦸"}],
+  paw:         [{id:"chase",name:"Chase",em:"🐾"},{id:"marshall",name:"Marshall",em:"🚒"},{id:"skye",name:"Skye",em:"🚁"},{id:"rubble",name:"Rubble",em:"🏗️"}],
+  sports:      [{id:"futbol",name:"Fútbol",em:"⚽"},{id:"basket",name:"Baloncesto",em:"🏀"},{id:"natacion",name:"Natación",em:"🏊"},{id:"tenis",name:"Tenis",em:"🎾"}],
+  travel:      [{id:"space",name:"El Espacio",em:"🚀"},{id:"jungle",name:"La Selva",em:"🌿"},{id:"ocean",name:"El Océano",em:"🌊"},{id:"mountains",name:"Las Montañas",em:"⛰️"}],
+};
+
+// ===== STATE =====
+let S = {
+  profile:null, mode:null, cat:null, char:null,
+  story:null, title:"", paras:[], parasRef:[],
+  chap:0, finished:false,
+  speaking:false, speakIdx:-1,
+  customMode:null,
+};
+
+// ===== API KEY =====
+const KEY_LS = "cc_openrouter_key";
+function getKey(){ return localStorage.getItem(KEY_LS)||""; }
+function openKeyOverlay(){
+  const k = getKey();
+  document.getElementById("key-input").value = k;
+  checkKey();
+  if(k) document.getElementById("skip-key-btn").classList.remove("hidden");
+  else  document.getElementById("skip-key-btn").classList.add("hidden");
+  document.getElementById("apikey-overlay").classList.remove("hidden");
+}
+function closeKeyOverlay(){ document.getElementById("apikey-overlay").classList.add("hidden"); }
+function checkKey(){
+  const v = document.getElementById("key-input").value.trim();
+  const ok = v.startsWith("sk-or");
+  const btn = document.getElementById("save-key-btn");
+  btn.disabled = !ok;
+  btn.style.background = ok ? "#A78BFA":"#ddd";
+  btn.style.cursor     = ok ? "pointer":"default";
+  btn.style.boxShadow  = ok ? "0 4px 0 #7c5cbf":"none";
+}
+function saveKey(){
+  const v = document.getElementById("key-input").value.trim();
+  if(!v.startsWith("sk-or")) return;
+  localStorage.setItem(KEY_LS, v);
+  closeKeyOverlay();
+  refreshKeyBtn();
+}
+function refreshKeyBtn(){
+  const btn = document.getElementById("key-status-btn");
+  const has = !!getKey();
+  btn.textContent = has ? "✅ API Key configurada" : "🔑 Configurar API Key";
+  btn.style.background = has ? "rgba(78,205,196,0.25)" : "rgba(255,255,255,0.15)";
+}
+
+// ===== STARS =====
+function stars(id){
+  const c=document.getElementById(id);
+  if(!c||c.dataset.b) return;
+  c.dataset.b="1";
+  for(let i=0;i<20;i++){
+    const e=document.createElement("div");
+    e.className="star";
+    e.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;font-size:${Math.random()*20+8}px;--dur:${(Math.random()*3+2).toFixed(1)}s;--delay:${(Math.random()*3).toFixed(1)}s`;
+    e.textContent="⭐";
+    c.appendChild(e);
+  }
+}
+
+// ===== ROUTING =====
+function goTo(name){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("screen-"+name).classList.add("active");
+  if(name==="profiles") { stars("st-profiles"); refreshKeyBtn(); }
+  if(name==="category") { stars("st-category"); renderCat(); }
+  if(name==="character"){ stars("st-character"); renderChar(); }
+  if(name==="story")    renderStory();
+  window.scrollTo(0,0);
+}
+
+// ===== PROFILES =====
+function renderProfiles(){
+  const list=document.getElementById("profiles-list");
+  list.innerHTML="";
+  PROFILES.forEach(p=>{
+    const b=document.createElement("button");
+    b.className="profile-btn";
+    b.innerHTML=`
+      <div style="width:56px;height:56px;border-radius:50%;background:${p.bg};display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;border:3px solid ${p.color}">${p.avatar}</div>
+      <div style="text-align:left;flex:1">
+        <div style="font-size:22px;color:#333;font-family:'Fredoka One',cursive">${p.name}</div>
+        <div style="font-size:13px;color:#888;font-family:'Nunito',sans-serif;font-weight:700">${p.mode==="child"?"📚 Modo Niño · 6-8 años":"🌟 Modo Bebé · 2-5 años"}</div>
+      </div>
+      <div style="font-size:24px">▶️</div>`;
+    b.onclick=()=>pickProfile(p);
+    list.appendChild(b);
+  });
+}
+function pickProfile(p){
+  if(!getKey()){ openKeyOverlay(); return; }
+  S.profile=p; S.mode=p.mode;
+  goTo("category");
+}
+
+// Custom
+function showCustom(){ document.getElementById("custom-toggle").classList.add("hidden"); document.getElementById("custom-form").classList.remove("hidden"); document.getElementById("cname").focus(); }
+function hideCustom(){ document.getElementById("custom-toggle").classList.remove("hidden"); document.getElementById("custom-form").classList.add("hidden"); document.getElementById("cname").value=""; S.customMode=null; checkCustom(); }
+function setCustomMode(m){
+  S.customMode=m;
+  const cb=document.getElementById("mb-child"), bb=document.getElementById("mb-baby");
+  cb.style.background=m==="child"?"#FF6B9D":"#FFE4F0"; cb.style.color=m==="child"?"white":"#FF6B9D";
+  bb.style.background=m==="baby"?"#4ECDC4":"#E0F7F5";  bb.style.color=m==="baby"?"white":"#4ECDC4";
+  checkCustom();
+}
+function checkCustom(){
+  const ok=document.getElementById("cname").value.trim()&&S.customMode;
+  const btn=document.getElementById("custom-ok");
+  btn.disabled=!ok; btn.style.background=ok?"#A78BFA":"#ddd"; btn.style.cursor=ok?"pointer":"default";
+}
+function submitCustom(){
+  const name=document.getElementById("cname").value.trim();
+  if(!name||!S.customMode) return;
+  if(!getKey()){ openKeyOverlay(); return; }
+  S.profile={id:99,name,avatar:"🧒",color:"#A78BFA",bg:"#EDE9FE",mode:S.customMode};
+  S.mode=S.customMode;
+  hideCustom(); goTo("category");
+}
+
+// ===== CATEGORY =====
+function renderCat(){
+  document.getElementById("cat-av").textContent=S.profile.avatar;
+  document.getElementById("cat-hi").textContent=`¡Hola ${S.profile.name}! 🎭`;
+  const g=document.getElementById("cat-grid"); g.innerHTML="";
+  CATS.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="card-btn"; b.style.cssText=`--c:${c.color};--s:${c.color}66`;
+    b.innerHTML=`<div style="font-size:44px">${c.emoji}</div><div style="font-family:'Fredoka One',cursive;font-size:15px;color:#333;text-align:center;line-height:1.2">${c.label}</div>`;
+    b.onclick=()=>{S.cat=c; goTo("character");};
+    g.appendChild(b);
+  });
+}
+
+// ===== CHARACTER =====
+function renderChar(){
+  const c=S.cat;
+  document.getElementById("char-cat-em").textContent=c.emoji;
+  document.getElementById("char-wrap").style.background=`linear-gradient(180deg,#f0f8ff,${c.color}22)`;
+  const g=document.getElementById("char-grid"); g.innerHTML="";
+  (CHARS[c.id]||[]).forEach(ch=>{
+    const b=document.createElement("button");
+    b.className="card-btn"; b.style.cssText=`--c:${c.color};--s:${c.color}66`;
+    b.innerHTML=`<div style="font-size:52px">${ch.em}</div><div style="font-family:'Fredoka One',cursive;font-size:17px;color:#333;text-align:center">${ch.name}</div>`;
+    b.onclick=()=>{S.char=ch; startStory();};
+    g.appendChild(b);
+  });
+}
+
+// ===== STORY =====
+function startStory(){
+  S.story=null; S.title=""; S.paras=[]; S.parasRef=[];
+  S.chap=0; S.finished=false; S.speaking=false; S.speakIdx=-1;
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  goTo("story");
+}
+
+function renderStory(){
+  const isBaby = S.mode==="baby";
+  const sw=document.getElementById("story-wrap"), sh=document.getElementById("story-head");
+  sw.style.background = isBaby ? "linear-gradient(180deg,#E8F4FD,#B8E0FF)" : "linear-gradient(180deg,#FFFDE7,#FFF9C4)";
+  sh.style.background = isBaby ? "linear-gradient(135deg,#4ECDC4,#44b8af)" : `linear-gradient(135deg,${S.cat.color},${S.cat.color}cc)`;
+
+  if(isBaby){
+    document.getElementById("head-child").classList.add("hidden");
+    document.getElementById("head-baby").classList.remove("hidden");
+    document.getElementById("hb-em").textContent    = S.char.em;
+    document.getElementById("hb-title").textContent = `El cuento de ${S.char.name}`;
+    document.getElementById("hb-meta").textContent  = `${S.profile.avatar} ${S.profile.name} · ${S.cat.emoji} ${S.cat.label}`;
+    document.getElementById("fab").classList.remove("hidden");
+    document.getElementById("load-em").textContent  = "⭐";
+    document.getElementById("load-txt").textContent = "¡Espera un momento! ✨";
+    document.getElementById("load-txt").style.color = "#4ECDC4";
+  } else {
+    document.getElementById("head-baby").classList.add("hidden");
+    document.getElementById("head-child").classList.remove("hidden");
+    document.getElementById("hc-em").textContent    = S.char.em;
+    document.getElementById("hc-title").textContent = `El cuento de ${S.char.name}`;
+    document.getElementById("hc-meta").textContent  = `${S.profile.avatar} ${S.profile.name} · ${S.cat.emoji} ${S.cat.label}`;
+    document.getElementById("fab").classList.add("hidden");
+    document.getElementById("load-em").textContent  = "✍️";
+    document.getElementById("load-txt").textContent = "Escribiendo el cuento...";
+    document.getElementById("load-txt").style.color = "#888";
+  }
+  document.getElementById("story-content").innerHTML="";
+  document.getElementById("story-choices").innerHTML="";
+  document.getElementById("story-choices").classList.add("hidden");
+  document.getElementById("story-end").classList.add("hidden");
+  setLoad(false);
+  loadStory();
+}
+
+// ===== OPENROUTER API =====
+// OpenRouter permite llamadas CORS desde el navegador con la cabecera HTTP-Referer
+async function callAI(prompt){
+  const key = getKey();
+  if(!key){ openKeyOverlay(); throw new Error("Sin API key"); }
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${key}`,
+      "HTTP-Referer": window.location.href,
+      "X-Title":"Cuentacuentos"
+    },
+    body: JSON.stringify({
+      model: "google/gemini-flash-1.5",   // Gratuito en OpenRouter
+      max_tokens: 1000,
+      messages:[{role:"user", content:prompt}]
+    })
+  });
+
+  if(!res.ok){
+    const err=await res.json().catch(()=>({}));
+    if(res.status===401||res.status===403){ openKeyOverlay(); throw new Error("API Key inválida"); }
+    throw new Error(err.error?.message||`Error ${res.status}`);
+  }
+
+  const data=await res.json();
+  return data.choices?.[0]?.message?.content || "";
+}
+
+async function genStory(choiceCtx=""){
+  const {char,cat,profile,mode}=S;
+  const mi = mode==="baby"
+    ? "Escribe para niños de 2-5 años. Frases MUY cortas (máx 8 palabras). Vocabulario simple. Onomatopeyas. Máximo 3 párrafos."
+    : "Escribe para niños de 6-8 años. Frases cortas. Máximo 4 párrafos. Vocabulario sencillo.";
+
+  const p = choiceCtx
+    ? `Continúa el cuento de ${char.name} para ${profile.name}. Categoría: ${cat.label}. ${mi}
+El niño eligió: "${choiceCtx}"
+RESPONDE SOLO EN JSON:
+{"paragraphs":["p1","p2"],"question":"¿Qué hace ${profile.name} ahora?","choices":[{"emoji":"🌟","text":"Opción 1"},{"emoji":"🌈","text":"Opción 2"},{"emoji":"⭐","text":"Opción 3"}]}`
+    : `Crea el INICIO de un cuento para ${profile.name} con ${char.name} (${char.em}), categoría ${cat.label}. ${mi}
+Incluye a ${profile.name} como amigo. Al final 3 opciones para continuar.
+RESPONDE SOLO EN JSON:
+{"title":"Título","paragraphs":["p1","p2"],"question":"¿Qué hace ${profile.name} ahora?","choices":[{"emoji":"🌟","text":"Opción 1"},{"emoji":"🌈","text":"Opción 2"},{"emoji":"⭐","text":"Opción 3"}]}`;
+
+  try{
+    const txt = await callAI(p);
+    return JSON.parse(txt.replace(/```json|```/g,"").trim());
+  } catch(e){
+    console.error(e);
+    showErr(e.message);
+    return null;
+  }
+}
+
+function showErr(msg){
+  setLoad(false);
+  const d=document.createElement("div");
+  d.style.cssText="background:#FFF0F0;border:3px solid #FF6B9D;border-radius:20px;padding:20px;text-align:center;animation:fadeSlide 0.5s ease;margin:0 20px";
+  d.innerHTML=`<div style="font-size:48px;margin-bottom:8px">😕</div>
+    <p style="font-family:'Fredoka One',cursive;font-size:20px;color:#cc4477;margin:0 0 8px">¡Ups! Algo salió mal</p>
+    <p style="font-family:'Nunito',sans-serif;font-size:13px;color:#888;margin:0 0 16px">${msg}</p>
+    <button onclick="openKeyOverlay()" style="background:#FF6B9D;border:none;border-radius:14px;padding:10px 18px;font-family:'Fredoka One',cursive;font-size:15px;color:white;cursor:pointer;margin-right:8px">🔑 API Key</button>
+    <button onclick="goHome()" style="background:#aaa;border:none;border-radius:14px;padding:10px 18px;font-family:'Fredoka One',cursive;font-size:15px;color:white;cursor:pointer">🏠 Inicio</button>`;
+  document.getElementById("story-content").appendChild(d);
+  scrollEnd();
+}
+
+// ===== STORY LOGIC =====
+async function loadStory(){
+  setLoad(true);
+  const data=await genStory();
+  if(!data) return;
+  S.story=data; S.title=data.title||`El cuento de ${S.char.name}`;
+  if(S.mode==="baby") document.getElementById("hb-title").textContent=S.title;
+  else                document.getElementById("hc-title").textContent=S.title;
+  setLoad(false);
+  if(S.mode==="baby"){ S.parasRef=[]; revealBaby(data.paragraphs||[],0,data.question); }
+  else revealChild(data.paragraphs||[]);
+}
+
+// -- Child --
+let cTimers=[];
+function revealChild(newP){
+  newP.forEach((txt,i)=>{
+    const t=setTimeout(()=>{
+      addParaChild(txt);
+      if(i===newP.length-1) cTimers.push(setTimeout(()=>showChoices(),600));
+    }, i*900);
+    cTimers.push(t);
+  });
+}
+function addParaChild(txt){
+  const d=document.createElement("div");
+  d.className="para-card";
+  d.style.borderLeft=`4px solid ${S.cat.color}`;
+  d.innerHTML=`<p style="font-family:'Nunito',sans-serif;font-size:17px;line-height:1.7;color:#333;margin:0">${txt}</p>`;
+  document.getElementById("story-content").appendChild(d);
+  S.paras.push(txt); scrollEnd();
+}
+
+// -- Baby --
+function revealBaby(paras, startIdx, question){
+  let i=0;
+  const next=()=>{
+    if(i>=paras.length){
+      speak(question||"¿Qué hacemos ahora?",9000,()=>setTimeout(()=>showChoices(),300));
+      return;
+    }
+    const gi=startIdx+i, txt=paras[i];
+    S.parasRef.push(txt);
+    addParaBaby(txt,gi); i++;
+    speak(txt,gi,()=>setTimeout(next,350));
+  };
+  setTimeout(next,400);
+}
+function addParaBaby(txt,idx){
+  const d=document.createElement("div");
+  d.className="para-baby"; d.id=`pb${idx}`; d.onclick=()=>speakIdx(idx);
+  d.innerHTML=`
+    <div class="wave-bars" id="wv${idx}" style="display:none">
+      <div class="wave-bar" style="animation-delay:0s"></div>
+      <div class="wave-bar" style="animation-delay:0.15s"></div>
+      <div class="wave-bar" style="animation-delay:0.3s"></div>
+      <span style="font-family:'Fredoka One',cursive;font-size:13px;color:#4ECDC4;margin-left:6px">Leyendo...</span>
+    </div>
+    <p style="font-family:'Nunito',sans-serif;font-size:20px;line-height:1.8;color:#333;margin:0;font-weight:700">${txt}</p>
+    <div style="text-align:right;margin-top:5px;font-size:11px;color:#aaa;font-family:'Nunito',sans-serif">🔊 Toca para escuchar</div>`;
+  document.getElementById("story-content").appendChild(d);
+  S.paras.push(txt); scrollEnd();
+}
+
+// -- Choices --
+function showChoices(){
+  if(!S.story||S.finished) return;
+  const con=document.getElementById("story-choices");
+  con.classList.remove("hidden");
+  const isBaby=S.mode==="baby";
+  const w=document.createElement("div");
+  w.style.cssText=isBaby
+    ? "background:linear-gradient(135deg,#FFE4B5,#FFD700);border-radius:28px;padding:22px 18px;box-shadow:0 8px 24px rgba(0,0,0,0.12);border:3px solid #FFB347;text-align:center"
+    : `background:${S.cat.color}22;border-radius:24px;padding:20px;border:3px solid ${S.cat.color};margin-top:8px`;
+  w.innerHTML=`<div style="font-size:${isBaby?52:32}px;margin-bottom:6px">🤔</div>
+    <p style="font-family:'Fredoka One',cursive;font-size:${isBaby?21:20}px;color:#333;margin:0 0 ${isBaby?18:14}px;text-align:center">${S.story.question}</p>`;
+  const cd=document.createElement("div");
+  cd.style.cssText=`display:flex;flex-direction:column;gap:${isBaby?13:10}px`;
+  const colors=["#FF6B9D","#4ECDC4","#FFB347"], shadows=["#cc4477","#2aa39b","#cc8800"];
+  (S.story.choices||[]).forEach((c,i)=>{
+    const b=document.createElement("button");
+    b.className="choice-btn";
+    b.style.background=colors[i]; b.style.setProperty("--sh",shadows[i]);
+    b.innerHTML=`<div style="width:56px;height:56px;background:rgba(255,255,255,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0">${c.emoji}</div>
+      <span style="font-family:'Fredoka One',cursive;font-size:19px;color:white;text-align:left">${c.text}</span>`;
+    b.onclick=()=>pickChoice(c);
+    cd.appendChild(b);
+  });
+  w.appendChild(cd); con.appendChild(w); scrollEnd();
+}
+
+async function pickChoice(choice){
+  document.getElementById("story-choices").innerHTML="";
+  document.getElementById("story-choices").classList.add("hidden");
+  if(window.speechSynthesis){ window.speechSynthesis.cancel(); setSpeaking(false); }
+
+  if(S.chap>=3){
+    if(S.mode==="baby"){
+      const et=`¡Muy bien ${S.profile.name}! ¡Has terminado el cuento! ¡Bravo!`;
+      addParaBaby(`🌟 ${et}`,S.parasRef.length); S.parasRef.push(`🌟 ${et}`);
+      speak(et,9999,null);
+    } else {
+      addParaChild(`🌟 ¡Y colorín colorado, este cuento ha acabado! ${S.profile.name} y ${S.char.name} vivieron felices para siempre. 🎉`);
+    }
+    showEnd(); return;
+  }
+
+  setLoad(true); S.chap++;
+  const data=await genStory(choice.text);
+  if(!data) return;
+  S.story=data; setLoad(false);
+  if(S.mode==="baby") revealBaby(data.paragraphs||[], S.parasRef.length, data.question);
+  else revealChild(data.paragraphs||[]);
+}
+
+function showEnd(){
+  S.finished=true;
+  const isBaby=S.mode==="baby";
+  document.getElementById("end-em").textContent = isBaby?"🌟":"🏆";
+  document.getElementById("end-txt").textContent = isBaby?"¡Muy bien!":"¡Cuento terminado!";
+  document.getElementById("story-end").classList.remove("hidden");
+  scrollEnd();
+}
+
+function goHome(){
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  S.mode=null; S.cat=null; S.char=null;
+  goTo("profiles");
+}
+
+function setLoad(v){
+  S.loading=v;
+  const el=document.getElementById("story-load");
+  v ? el.classList.remove("hidden") : el.classList.add("hidden");
+  if(v) scrollEnd();
+}
+function scrollEnd(){
+  setTimeout(()=>document.getElementById("scroll-anchor")?.scrollIntoView({behavior:"smooth"}),60);
+}
+
+// ===== TTS =====
+function speak(txt,idx,onDone){
+  if(!window.speechSynthesis){ setTimeout(()=>onDone?.(),800); return; }
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang="es-ES"; u.rate=0.82; u.pitch=1.2;
+  setSpeaking(true,idx);
+  u.onend =()=>{ setSpeaking(false); onDone?.(); };
+  u.onerror=()=>{ setSpeaking(false); onDone?.(); };
+  window.speechSynthesis.speak(u);
+}
+function setSpeaking(v,idx=-1){
+  S.speaking=v; S.speakIdx=v?idx:-1;
+  const fab=document.getElementById("fab");
+  if(v){ fab.classList.remove("idle"); fab.classList.add("speaking"); fab.textContent="⏸️"; }
+  else  { fab.classList.remove("speaking"); fab.classList.add("idle"); fab.textContent="🔊"; }
+  document.querySelectorAll(".para-baby").forEach(c=>{
+    c.classList.remove("speaking");
+    const wid=c.querySelector("[id^='wv']")?.id;
+    if(wid) document.getElementById(wid).style.display="none";
+  });
+  if(v&&idx>=0){
+    const card=document.getElementById(`pb${idx}`);
+    if(card){ card.classList.add("speaking"); const w=document.getElementById(`wv${idx}`); if(w) w.style.display="flex"; }
+  }
+}
+function speakIdx(idx){ const t=S.parasRef[idx]; if(t) speak(t,idx,null); }
+function toggleTTS(){
+  if(S.speaking){ window.speechSynthesis?.cancel(); setSpeaking(false); }
+  else { const li=S.parasRef.length-1; if(li>=0) speakIdx(li); }
+}
+
+// ===== BOUNCE CSS =====
+const sty=document.createElement("style");
+sty.textContent=".bounce-el{animation:bounce 0.8s ease infinite}";
+document.head.appendChild(sty);
+
+// ===== BOOT =====
+renderProfiles();
+stars("st-profiles");
+refreshKeyBtn();
+// Si no hay key al cargar, mostrar overlay automáticamente
+if(!getKey()) openKeyOverlay();
+</script>
+</body>
+</html>
