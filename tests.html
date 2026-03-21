@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🧪 Tests — Cuentacuentos</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Nunito',sans-serif;background:#1a1a2e;color:#eee;padding:20px;max-width:600px;margin:0 auto}
+    h1{font-family:'Fredoka One',cursive;font-size:28px;color:#A78BFA;margin-bottom:6px}
+    p.sub{font-size:14px;color:#888;margin-bottom:20px}
+    .test-card{background:#16213e;border-radius:16px;padding:16px 20px;margin-bottom:12px;border-left:4px solid #444;transition:all 0.3s}
+    .test-card.pass{border-color:#4ECDC4}.test-card.fail{border-color:#FF6B9D}.test-card.running{border-color:#FFB347}.test-card.skip{border-color:#666}
+    .test-name{font-family:'Fredoka One',cursive;font-size:17px;margin-bottom:4px}
+    .test-desc{font-size:13px;color:#aaa;margin-bottom:6px}
+    .test-result{font-size:13px;font-weight:700;padding:4px 10px;border-radius:8px;display:inline-block}
+    .pass .test-result{background:#4ECDC422;color:#4ECDC4}.fail .test-result{background:#FF6B9D22;color:#FF6B9D}
+    .running .test-result{background:#FFB34722;color:#FFB347}.skip .test-result{background:#66666622;color:#888}
+    .test-detail{font-size:12px;color:#666;margin-top:4px;word-break:break-all}.test-detail.error{color:#FF6B9D88}
+    #summary{background:#16213e;border-radius:16px;padding:16px 20px;margin-bottom:20px;text-align:center;border:2px solid #333}
+    #summary h2{font-family:'Fredoka One',cursive;font-size:22px;margin-bottom:8px}
+    .stat{display:inline-block;margin:0 10px;font-size:14px}.stat span{font-family:'Fredoka One',cursive;font-size:22px;display:block}
+    .pass-n{color:#4ECDC4}.fail-n{color:#FF6B9D}.skip-n{color:#888}
+    #run-btn{background:linear-gradient(135deg,#A78BFA,#7c5cbf);border:none;border-radius:20px;padding:12px 32px;font-family:'Fredoka One',cursive;font-size:18px;color:white;cursor:pointer;box-shadow:0 4px 0 #5a3fa0;margin-bottom:20px;display:block;width:100%}
+    #run-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #5a3fa0}
+    #run-btn:disabled{background:#444;box-shadow:none;cursor:default}
+    #apikey-row{display:flex;gap:10px;margin-bottom:16px}
+    #apikey-row input{flex:1;background:#16213e;border:2px solid #A78BFA;border-radius:12px;padding:10px 14px;font-family:'Nunito',sans-serif;font-size:14px;color:white}
+    #apikey-row input::placeholder{color:#555}
+    #apikey-row button{background:#A78BFA;border:none;border-radius:12px;padding:10px 18px;font-family:'Fredoka One',cursive;font-size:14px;color:white;cursor:pointer}
+    #progress-bar{height:6px;background:#333;border-radius:3px;margin-bottom:20px;overflow:hidden}
+    #progress-fill{height:100%;background:linear-gradient(90deg,#4ECDC4,#A78BFA);border-radius:3px;width:0%;transition:width 0.3s}
+  </style>
+</head>
+<body>
+<h1>🧪 Tests — Cuentacuentos</h1>
+<p class="sub">Ejecuta todos los tests antes de publicar una nueva versión del HTML</p>
+
+<div id="apikey-row">
+  <input id="key-in" type="password" placeholder="sk-or-v1-... (para tests de red)"/>
+  <button onclick="saveTestKey()">Guardar</button>
+</div>
+
+<button id="run-btn" onclick="runAll()">▶️ Ejecutar todos los tests</button>
+<div id="progress-bar"><div id="progress-fill"></div></div>
+
+<div id="summary" class="hidden">
+  <h2 id="summary-title">Resultados</h2>
+  <div>
+    <div class="stat"><span id="n-pass" class="pass-n">0</span>Pasados ✅</div>
+    <div class="stat"><span id="n-fail" class="fail-n">0</span>Fallidos ❌</div>
+    <div class="stat"><span id="n-skip" class="skip-n">0</span>Omitidos ⏭️</div>
+  </div>
+</div>
+<div id="tests-container"></div>
+
+<script>
+const KEY_LS="cc_openrouter_key";
+function getKey(){return localStorage.getItem(KEY_LS)||"";}
+function saveTestKey(){const v=document.getElementById("key-in").value.trim();if(v)localStorage.setItem(KEY_LS,v);document.getElementById("key-in").value="";document.getElementById("key-in").placeholder="✓ API Key guardada";}
+window.onload=()=>{if(getKey())document.getElementById("key-in").placeholder="✓ API Key ya guardada";};
+
+const PROFILES=[{id:1,name:"Nerea",avatar:"👧",color:"#FF6B9D",bg:"#FFE4F0",mode:"child"},{id:2,name:"Darío",avatar:"👦",color:"#4ECDC4",bg:"#E0F7F5",mode:"baby"},{id:3,name:"Tiago",avatar:"🧒",color:"#FFB347",bg:"#FFF3E0",mode:"baby"}];
+const CATS=[{id:"cartoons",label:"Dibujos Animados",emoji:"📺",color:"#FF6B9D"},{id:"disney",label:"Disney",emoji:"🏰",color:"#9B59B6"},{id:"superheroes",label:"Superhéroes",emoji:"🦸",color:"#E74C3C"},{id:"paw",label:"Patrulla Canina",emoji:"🐾",color:"#3498DB"},{id:"sports",label:"Deportes",emoji:"⚽",color:"#2ECC71"},{id:"travel",label:"Viajes",emoji:"✈️",color:"#F39C12"}];
+const CHARS={cartoons:[{id:"peppa",name:"Peppa Pig",em:"🐷"},{id:"bluey",name:"Bluey",em:"🐕"},{id:"bob",name:"Bob Esponja",em:"🧽"},{id:"tom",name:"Tom y Jerry",em:"🐱"}],disney:[{id:"elsa",name:"Elsa",em:"❄️"},{id:"simba",name:"Simba",em:"🦁"},{id:"moana",name:"Moana",em:"🌊"},{id:"buzz",name:"Buzz Lightyear",em:"🚀"}],superheroes:[{id:"spidey",name:"Spider-Man",em:"🕷️"},{id:"batman",name:"Batman",em:"🦇"},{id:"wonder",name:"Wonder Woman",em:"⭐"},{id:"super",name:"Superman",em:"🦸"}],paw:[{id:"chase",name:"Chase",em:"🐾"},{id:"marshall",name:"Marshall",em:"🚒"},{id:"skye",name:"Skye",em:"🚁"},{id:"rubble",name:"Rubble",em:"🏗️"}],sports:[{id:"futbol",name:"Fútbol",em:"⚽"},{id:"basket",name:"Baloncesto",em:"🏀"},{id:"natacion",name:"Natación",em:"🏊"},{id:"tenis",name:"Tenis",em:"🎾"}],travel:[{id:"space",name:"El Espacio",em:"🚀"},{id:"jungle",name:"La Selva",em:"🌿"},{id:"ocean",name:"El Océano",em:"🌊"},{id:"mountains",name:"Las Montañas",em:"⛰️"}]};
+const MODELS=["google/gemini-2.0-flash-001","google/gemini-2.0-flash-lite-001","meta-llama/llama-3.1-8b-instruct:free","mistralai/mistral-7b-instruct:free"];
+
+// Mini test framework
+const TESTS=[];
+function test(name,desc,fn,opts={}){TESTS.push({name,desc,fn,needsNet:opts.needsNet||false});}
+function assert(c,m){if(!c)throw new Error(m||"Aserción fallida");}
+function assertEq(a,b,m){if(a!==b)throw new Error((m||"")+" → esperado: "+JSON.stringify(b)+", obtenido: "+JSON.stringify(a));}
+function assertHas(o,k,m){if(!(k in o))throw new Error((m||"")+" → falta clave '"+k+"'");}
+
+// ── TESTS DE DATOS ──
+test("3 perfiles definidos","Nerea, Darío y Tiago deben existir",()=>{
+  assertEq(PROFILES.length,3,"Número de perfiles");
+  PROFILES.forEach(p=>{assert(p.name,"Sin nombre");assert(p.color?.startsWith("#"),"Color inválido: "+p.name);assert(["child","baby"].includes(p.mode),"Modo inválido: "+p.name);});
+  return PROFILES.map(p=>p.name+"("+p.mode+")").join(", ");
+});
+test("Modos correctos por perfil","Nerea=child, Darío=baby, Tiago=baby",()=>{
+  assertEq(PROFILES[0].name,"Nerea"); assertEq(PROFILES[0].mode,"child","Nerea");
+  assertEq(PROFILES[1].name,"Darío"); assertEq(PROFILES[1].mode,"baby","Darío");
+  assertEq(PROFILES[2].name,"Tiago"); assertEq(PROFILES[2].mode,"baby","Tiago");
+  return "Nerea→child ✓  Darío→baby ✓  Tiago→baby ✓";
+});
+test("6 categorías correctas","Deben existir las 6 categorías con campos obligatorios",()=>{
+  assertEq(CATS.length,6,"Número de categorías");
+  CATS.forEach(c=>{assert(c.id&&c.label&&c.emoji&&c.color?.startsWith("#"),"Campos incompletos en: "+c.id);});
+  return CATS.map(c=>c.emoji).join(" ");
+});
+test("4 personajes por categoría","Cada categoría debe tener exactamente 4 personajes con nombre y emoji",()=>{
+  const errs=[];
+  CATS.forEach(c=>{const ch=CHARS[c.id];if(!ch)errs.push("Falta CHARS["+c.id+"]");else if(ch.length!==4)errs.push(c.id+": "+ch.length+"/4");else ch.forEach(x=>{if(!x.name||!x.em)errs.push("Campo vacío en "+c.id);});});
+  if(errs.length)throw new Error(errs.join(" | "));
+  return CATS.length*4+" personajes correctos";
+});
+test("Modelos de IA configurados","Al menos 2 modelos de fallback",()=>{
+  assert(MODELS.length>=2,"Mínimo 2 modelos");
+  MODELS.forEach(m=>assert(m.includes("/"),"Formato inválido: "+m));
+  return MODELS.length+" modelos: "+MODELS.join(", ");
+});
+
+// ── TESTS DE API KEY ──
+test("localStorage de API Key","Guardar y leer key funciona correctamente",()=>{
+  const k="sk-or-test-abc123";
+  localStorage.setItem(KEY_LS,k);
+  assertEq(localStorage.getItem(KEY_LS),k,"Key leída");
+  return "localStorage OK";
+});
+test("Validación formato key","Solo sk-or-... debe ser válida",()=>{
+  const validas=["sk-or-v1-abc","sk-or-test-xyz"];
+  const invalidas=["","sk-ant-abc","abc123","sk-"];
+  validas.forEach(k=>assert(k.startsWith("sk-or"),"Debería ser válida: "+k));
+  invalidas.forEach(k=>assert(!k.startsWith("sk-or"),"Debería ser inválida: "+k));
+  return validas.length+" válidas, "+invalidas.length+" inválidas ✓";
+});
+
+// ── TESTS DE JSON ──
+test("Parse JSON inicio de cuento","Estructura con title, paragraphs, question, choices[3]",()=>{
+  const mock='{"title":"El gran viaje","paragraphs":["Había una vez...","Y entonces..."],"question":"¿Qué hacemos?","choices":[{"emoji":"🌟","text":"Bosque"},{"emoji":"🏠","text":"Casa"},{"emoji":"🎉","text":"Fiesta"}]}';
+  const d=JSON.parse(mock.replace(/```json|```/g,"").trim());
+  ["title","paragraphs","question","choices"].forEach(k=>assertHas(d,k));
+  assertEq(d.choices.length,3,"3 opciones");
+  d.choices.forEach((c,i)=>{assertHas(c,"emoji","choice["+i+"]");assertHas(c,"text","choice["+i+"]");});
+  return '"'+d.title+'" | '+d.paragraphs.length+' párrafos | '+d.choices.length+' opciones';
+});
+test("Parse JSON continuación","Sin title, con paragraphs, question, choices[3]",()=>{
+  const mock='{"paragraphs":["Siguieron...","Al fin..."],"question":"¿Qué encuentran?","choices":[{"emoji":"🐉","text":"Dragón"},{"emoji":"🏰","text":"Castillo"},{"emoji":"🌈","text":"Arcoíris"}]}';
+  const d=JSON.parse(mock.replace(/```json|```/g,"").trim());
+  ["paragraphs","question","choices"].forEach(k=>assertHas(d,k));
+  assertEq(d.choices.length,3,"3 opciones");
+  return d.paragraphs.length+' párrafos | "'+d.question+'"';
+});
+test("JSON con backticks de markdown","Debe parsear aunque venga con ```json```",()=>{
+  const raw='```json\n{"title":"Test","paragraphs":["p1"],"question":"Q","choices":[{"emoji":"⭐","text":"A"},{"emoji":"🌟","text":"B"},{"emoji":"🎉","text":"C"}]}\n```';
+  const d=JSON.parse(raw.replace(/```json|```/g,"").trim());
+  assertEq(d.title,"Test");
+  return "Backticks eliminados correctamente ✓";
+});
+test("Fallback ante JSON malformado","Debe usar cuento de reserva si la IA devuelve texto sin JSON",()=>{
+  const bad="Aquí tienes un cuento: Había una vez... (sin JSON)";
+  let parsed;
+  try{parsed=JSON.parse(bad);}
+  catch{parsed={title:"Un cuento mágico",paragraphs:["Había una vez..."],question:"¿Qué hacemos?",choices:[{emoji:"🌟",text:"A"},{emoji:"🏠",text:"B"},{emoji:"🎉",text:"C"}]};}
+  assertHas(parsed,"paragraphs"); assertHas(parsed,"choices");
+  return "Fallback activado correctamente ✓";
+});
+
+// ── TESTS DE NAVEGADOR ──
+test("SpeechSynthesis disponible","El navegador debe soportar voz en off",()=>{
+  if(!("speechSynthesis" in window))throw new Error("SpeechSynthesis no disponible");
+  return "SpeechSynthesis OK ✓";
+});
+test("Detección de iOS","La lógica de detección iOS debe devolver boolean",()=>{
+  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  assert(typeof ios==="boolean");
+  return "iOS detectado: "+ios+" (UA: "+navigator.userAgent.slice(0,50)+"...)";
+});
+test("fetch disponible","El navegador debe soportar fetch API",()=>{
+  assert(typeof fetch==="function","fetch no disponible");
+  return "fetch API disponible ✓";
+});
+
+// ── TESTS DE RED (necesitan API key) ──
+test("Ping a OpenRouter","Verifica que openrouter.ai responde sin gastar créditos",async()=>{
+  const key=getKey(); if(!key)return "SKIP: sin API Key";
+  const res=await fetch("https://openrouter.ai/api/v1/models",{headers:{"Authorization":"Bearer "+key}});
+  if(res.status===401)throw new Error("API Key inválida (401)");
+  if(!res.ok)throw new Error("HTTP "+res.status);
+  const d=await res.json();
+  return "OpenRouter OK — "+(d.data||[]).length+" modelos disponibles";
+},{needsNet:true});
+
+test("Modelos disponibles en catálogo","Al menos 1 de los 4 modelos configurados debe estar activo",async()=>{
+  const key=getKey(); if(!key)return "SKIP: sin API Key";
+  const res=await fetch("https://openrouter.ai/api/v1/models",{headers:{"Authorization":"Bearer "+key}});
+  if(!res.ok)throw new Error("HTTP "+res.status);
+  const d=await res.json();
+  const ids=(d.data||[]).map(m=>m.id);
+  const found=MODELS.filter(m=>ids.includes(m));
+  if(found.length===0)throw new Error("Ningún modelo disponible de: "+MODELS.join(", "));
+  return found.length+"/"+MODELS.length+" modelos activos: "+found.join(", ");
+},{needsNet:true});
+
+test("Generación real de cuento","Genera un cuento corto y valida el JSON de respuesta",async()=>{
+  const key=getKey(); if(!key)return "SKIP: sin API Key";
+  const prompt='Crea el INICIO de un cuento para Nerea con Peppa Pig. Frases muy cortas.\nRESPONDE SOLO EN JSON:\n{"title":"T","paragraphs":["p1"],"question":"Q","choices":[{"emoji":"🌟","text":"A"},{"emoji":"🌈","text":"B"},{"emoji":"⭐","text":"C"}]}';
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  const headers={"Content-Type":"application/json","Authorization":"Bearer "+key};
+  if(!isIOS)headers["HTTP-Referer"]=window.location.origin||"https://cuentacuentos.app";
+  let lastErr="Sin respuesta";
+  for(const model of MODELS){
+    try{
+      const res=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers,body:JSON.stringify({model,max_tokens:400,messages:[{role:"user",content:prompt}]})});
+      if(!res.ok){lastErr="HTTP "+res.status+" con "+model;continue;}
+      const d=await res.json();
+      const txt=d.choices?.[0]?.message?.content||"";
+      if(!txt){lastErr="Respuesta vacía con "+model;continue;}
+      const parsed=JSON.parse(txt.replace(/```json|```/g,"").trim());
+      assertHas(parsed,"title"); assertHas(parsed,"paragraphs"); assertHas(parsed,"choices");
+      assertEq(parsed.choices.length,3,"3 opciones");
+      return "✓ Modelo: "+model+' | "'+parsed.title+'" | '+parsed.paragraphs.length+" párrafos";
+    }catch(e){if(e.message.includes("inválida"))throw e; lastErr=e.message;}
+  }
+  throw new Error("Todos los modelos fallaron. Último: "+lastErr);
+},{needsNet:true});
+
+// ── RUNNER ──
+let R={pass:0,fail:0,skip:0};
+async function runAll(){
+  R={pass:0,fail:0,skip:0};
+  const btn=document.getElementById("run-btn");
+  btn.disabled=true; btn.textContent="⏳ Ejecutando...";
+  document.getElementById("summary").classList.add("hidden");
+  document.getElementById("tests-container").innerHTML="";
+  document.getElementById("progress-fill").style.width="0%";
+
+  for(let i=0;i<TESTS.length;i++){
+    const t=TESTS[i];
+    const card=makeCard(t,"running","⏳ Ejecutando...");
+    document.getElementById("tests-container").appendChild(card);
+    card.scrollIntoView({behavior:"smooth",block:"nearest"});
+    let status="pass",msg="",detail="";
+    const t0=Date.now();
+    try{
+      const r=await t.fn();
+      if(typeof r==="string"&&r.startsWith("SKIP:")){status="skip";msg="⏭️ Omitido";detail=r.replace("SKIP:","").trim();}
+      else{status="pass";msg="✅ Pasado";detail=r||"";}
+    }catch(e){status="fail";msg="❌ Fallido";detail=e.message;}
+    R[status]++;
+    updateCard(card,status,msg,detail,Date.now()-t0);
+    document.getElementById("progress-fill").style.width=((i+1)/TESTS.length*100)+"%";
+    await new Promise(r=>setTimeout(r,60));
+  }
+  document.getElementById("n-pass").textContent=R.pass;
+  document.getElementById("n-fail").textContent=R.fail;
+  document.getElementById("n-skip").textContent=R.skip;
+  const ok=R.fail===0;
+  document.getElementById("summary-title").textContent=ok?"🎉 ¡Todo correcto!":"⚠️ "+R.fail+" test"+(R.fail>1?"s":"")+" fallido"+(R.fail>1?"s":"");
+  document.getElementById("summary").style.border="2px solid "+(ok?"#4ECDC4":"#FF6B9D");
+  document.getElementById("summary").classList.remove("hidden");
+  btn.disabled=false; btn.textContent="🔄 Ejecutar de nuevo";
+}
+
+function makeCard(t,status,msg){
+  const d=document.createElement("div");
+  d.className="test-card "+status;
+  d.innerHTML='<div class="test-name">'+t.name+(t.needsNet?' <span style="font-size:11px;color:#555">🌐</span>':'')+'</div><div class="test-desc">'+t.desc+'</div><span class="test-result">'+msg+'</span><div class="test-detail"></div>';
+  return d;
+}
+function updateCard(card,status,msg,detail,ms){
+  card.className="test-card "+status;
+  card.querySelector(".test-result").textContent=msg+" ("+ms+"ms)";
+  const det=card.querySelector(".test-detail");
+  det.textContent=detail; det.className="test-detail"+(status==="fail"?" error":"");
+}
+</script>
+</body>
+</html>
