@@ -430,12 +430,11 @@ function renderStory(){
 // ===== OPENROUTER API =====
 // Lista de modelos gratuitos — si uno falla se prueba el siguiente
 // openrouter/free elige automáticamente el mejor modelo gratuito disponible
-// Los demás son fallbacks por si acaso
 const MODELS = [
   "openrouter/free",
   "google/gemini-2.0-flash-exp:free",
   "meta-llama/llama-3.3-70b-instruct:free",
-  "google/gemini-2.5-flash-preview:free",
+  "deepseek/deepseek-r1:free",
 ];
 let modelIdx = 0;
 
@@ -677,8 +676,13 @@ function speak(txt,idx,onDone){
   const u=new SpeechSynthesisUtterance(txt);
   u.lang="es-ES"; u.rate=0.82; u.pitch=1.2;
   setSpeaking(true,idx);
-  u.onend =()=>{ setSpeaking(false); onDone?.(); };
-  u.onerror=()=>{ setSpeaking(false); onDone?.(); };
+  let done=false;
+  // Timeout de seguridad: si onDone no se llama en 8s, continúa igualmente
+  const safetyTimer = setTimeout(()=>{
+    if(!done){ done=true; setSpeaking(false); onDone?.(); }
+  }, Math.max(txt.length * 120, 3000));
+  u.onend =()=>{ if(!done){ done=true; clearTimeout(safetyTimer); setSpeaking(false); onDone?.(); }};
+  u.onerror=()=>{ if(!done){ done=true; clearTimeout(safetyTimer); setSpeaking(false); onDone?.(); }};
   window.speechSynthesis.speak(u);
 }
 function setSpeaking(v,idx=-1){
