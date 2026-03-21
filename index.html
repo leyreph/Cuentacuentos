@@ -429,11 +429,13 @@ function renderStory(){
 
 // ===== OPENROUTER API =====
 // Lista de modelos gratuitos — si uno falla se prueba el siguiente
+// openrouter/free elige automáticamente el mejor modelo gratuito disponible
+// Los demás son fallbacks por si acaso
 const MODELS = [
-  "google/gemini-2.0-flash-001",
-  "google/gemini-2.0-flash-lite-001",
-  "meta-llama/llama-3.1-8b-instruct:free",
-  "mistralai/mistral-7b-instruct:free",
+  "openrouter/free",
+  "google/gemini-2.0-flash-exp:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "google/gemini-2.5-flash-preview:free",
 ];
 let modelIdx = 0;
 
