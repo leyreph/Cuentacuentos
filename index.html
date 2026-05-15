@@ -14,6 +14,17 @@
     @keyframes twinkle{0%,100%{opacity:0.1}50%{opacity:0.3}}
     @keyframes wavebar{from{height:5px}to{height:20px}}
     @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    /* Loading animation */
+    @keyframes orbit{from{transform:rotate(var(--angle)) translateX(54px) rotate(calc(-1*var(--angle)))}to{transform:rotate(calc(var(--angle) + 360deg)) translateX(54px) rotate(calc(-1*(var(--angle) + 360deg)))}}
+    @keyframes dotPulse{0%,100%{transform:scale(0.5);opacity:0.35}50%{transform:scale(1.1);opacity:1}}
+    @keyframes loadFade{0%,100%{opacity:0;transform:translateY(6px)}15%,85%{opacity:1;transform:translateY(0)}}
+    .load-sparkles{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+    .load-spark{position:absolute;font-size:18px;animation:orbit 2.4s linear infinite}
+    .load-dots{display:flex;gap:10px;justify-content:center;margin-top:14px}
+    .load-dots span{width:11px;height:11px;border-radius:50%;animation:dotPulse 1.2s ease infinite}
+    .load-dots span:nth-child(2){animation-delay:0.2s}
+    .load-dots span:nth-child(3){animation-delay:0.4s}
+    #load-txt{animation:none;transition:opacity 0.3s}
     input:focus{outline:none}
     .screen{display:none}.screen.active{display:block}
     .stars-bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
@@ -39,6 +50,9 @@
     #fab.speaking{background:linear-gradient(135deg,#FF6B9D,#ff8fb3);box-shadow:0 6px 20px rgba(255,107,157,0.5);animation:pulse 1s ease-in-out infinite}
     #home-fab{position:fixed;top:18px;right:18px;z-index:100;border:none;border-radius:50%;width:46px;height:46px;font-size:21px;cursor:pointer;background:rgba(255,255,255,0.88);box-shadow:0 4px 14px rgba(0,0,0,0.18);display:flex;align-items:center;justify-content:center;transition:all 0.15s}
     #home-fab:active{transform:scale(0.9)}
+    /* History card */
+    .hist-card{background:white;border-radius:22px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(0,0,0,0.1);animation:fadeSlide 0.4s ease;cursor:pointer;transition:transform 0.12s,box-shadow 0.12s}
+    .hist-card:active{transform:scale(0.97);box-shadow:0 2px 8px rgba(0,0,0,0.1)}
     /* API Key overlay */
     #apikey-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px}
     #apikey-overlay.hidden{display:none}
@@ -120,12 +134,43 @@
         </div>
       </div>
 
+      <!-- History button (shown only if there are saved stories) -->
+      <div id="history-btn-wrap" style="display:none;margin-top:10px">
+        <button onclick="goTo('history')"
+          style="width:100%;background:rgba(255,255,255,0.18);border:2px solid rgba(255,255,255,0.5);border-radius:28px;padding:13px 20px;display:flex;align-items:center;gap:12px;cursor:pointer"
+          onmouseenter="this.style.background='rgba(255,255,255,0.28)'" onmouseleave="this.style.background='rgba(255,255,255,0.18)'">
+          <div style="font-size:26px">📚</div>
+          <div style="text-align:left">
+            <div style="font-size:17px;color:white;font-family:'Fredoka One',cursive">Mis cuentos</div>
+            <div id="history-count-lbl" style="font-size:12px;color:rgba(255,255,255,0.8);font-family:'Nunito',sans-serif;font-weight:700"></div>
+          </div>
+          <div style="font-size:20px;margin-left:auto">▶️</div>
+        </button>
+      </div>
+
       <div style="text-align:center;margin-top:14px">
         <button onclick="openKeyOverlay()" id="key-status-btn"
           style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);border-radius:20px;padding:7px 16px;font-family:'Nunito',sans-serif;font-size:13px;color:rgba(255,255,255,0.85);cursor:pointer">
           🔑 Configurar API Key
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCREEN: HISTORY ====== -->
+<div id="screen-history" class="screen">
+  <div style="min-height:100vh;background:linear-gradient(180deg,#f0e6ff,#e8d5ff);padding:24px 20px">
+    <div style="max-width:440px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:56px">📚</div>
+        <h2 style="font-family:'Fredoka One',cursive;font-size:28px;color:#5b3f9e;margin:6px 0 4px">Mis cuentos</h2>
+        <p style="font-family:'Nunito',sans-serif;color:#8b6abf;font-size:15px">¡Vuelve a leer tus favoritos!</p>
+      </div>
+      <div id="history-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px"></div>
+      <button class="action-btn" style="--bg:#A78BFA;--sh:#7c5cbf;--gl:#a78bfa22;--r:16px;--p:12px 18px;--f:16px" onclick="goTo('profiles')">
+        <span style="font-size:20px">⬅️</span> Volver
+      </button>
     </div>
   </div>
 </div>
@@ -192,9 +237,25 @@
 
     <div id="story-content" style="max-width:440px;margin:0 auto;padding:22px 20px"></div>
 
-    <div id="story-load" class="hidden" style="text-align:center;padding:32px">
-      <div id="load-em" style="font-size:56px" class="bounce-el">✍️</div>
-      <p id="load-txt" style="font-family:'Fredoka One',cursive;font-size:22px;color:#888;margin-top:8px">Escribiendo el cuento...</p>
+    <!-- Loading mejorado -->
+    <div id="story-load" class="hidden" style="text-align:center;padding:40px 20px">
+      <div style="position:relative;display:inline-block;width:90px;height:90px;margin-bottom:6px">
+        <div id="load-em" style="font-size:64px;line-height:90px" class="bounce-el">✍️</div>
+        <div class="load-sparkles">
+          <span class="load-spark" style="--angle:0deg">⭐</span>
+          <span class="load-spark" style="--angle:60deg">✨</span>
+          <span class="load-spark" style="--angle:120deg">🌟</span>
+          <span class="load-spark" style="--angle:180deg">⭐</span>
+          <span class="load-spark" style="--angle:240deg">✨</span>
+          <span class="load-spark" style="--angle:300deg">🌟</span>
+        </div>
+      </div>
+      <p id="load-txt" style="font-family:'Fredoka One',cursive;font-size:21px;color:#888;margin-top:4px;min-height:30px"></p>
+      <div id="load-dots" class="load-dots">
+        <span style="background:#FFB347"></span>
+        <span style="background:#FF6B9D"></span>
+        <span style="background:#4ECDC4"></span>
+      </div>
     </div>
 
     <div id="story-choices" class="hidden" style="max-width:440px;margin:0 auto;padding:0 20px 20px;animation:fadeSlide 0.5s ease"></div>
@@ -203,8 +264,11 @@
       <div id="end-inner" style="border-radius:28px;padding:24px;text-align:center;background:linear-gradient(135deg,#FFD700,#FFA500);box-shadow:0 8px 24px rgba(0,0,0,0.12)">
         <div id="end-em" style="font-size:64px">🌟</div>
         <p id="end-txt" style="font-family:'Fredoka One',cursive;font-size:26px;color:white;margin:8px 0 16px">¡Muy bien!</p>
-        <button class="action-btn" style="--bg:white;--sh:#ddddddaa;--gl:#ffffff22" onclick="goHome()">
+        <button class="action-btn" style="--bg:white;--sh:#ddddddaa;--gl:#ffffff22;margin-bottom:10px" onclick="goHome()">
           <span style="font-size:28px">🏠</span><span style="color:#FF6B9D">¡Otro cuento!</span>
+        </button>
+        <button id="replay-btn" class="action-btn hidden" style="--bg:#A78BFA;--sh:#7c5cbf;--gl:#a78bfa22;--f:17px;--p:12px 18px" onclick="goTo('history')">
+          <span style="font-size:22px">📚</span><span>Ver mis cuentos</span>
         </button>
       </div>
     </div>
@@ -245,6 +309,7 @@ let S = {
   chap:0, finished:false,
   speaking:false, speakIdx:-1,
   customMode:null,
+  replayMode:false,
 };
 
 // ===== API KEY =====
@@ -282,6 +347,93 @@ function refreshKeyBtn(){
   btn.style.background = has ? "rgba(78,205,196,0.25)" : "rgba(255,255,255,0.15)";
 }
 
+// ===== HISTORY =====
+const HISTORY_LS = "cc_history";
+const MAX_HISTORY = 8;
+
+function getHistory(){
+  try{ return JSON.parse(localStorage.getItem(HISTORY_LS)||"[]"); }
+  catch{ return []; }
+}
+
+function saveStoryToHistory(){
+  if(!S.title||!S.paras.length||S.replayMode) return;
+  const entry = {
+    id: Date.now(),
+    title: S.title,
+    profile: {name:S.profile.name, avatar:S.profile.avatar},
+    cat: {id:S.cat.id, label:S.cat.label, emoji:S.cat.emoji, color:S.cat.color},
+    char: {name:S.char.name, em:S.char.em},
+    mode: S.mode,
+    paras: [...S.paras],
+    date: new Date().toLocaleDateString('es-ES',{day:'numeric',month:'short'})
+  };
+  let history = getHistory();
+  // Evitar duplicados por título+personaje recientes
+  history = history.filter(h => !(h.title===entry.title && h.char.name===entry.char.name));
+  history.unshift(entry);
+  if(history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+  localStorage.setItem(HISTORY_LS, JSON.stringify(history));
+  refreshHistoryBtn();
+}
+
+function refreshHistoryBtn(){
+  const wrap = document.getElementById("history-btn-wrap");
+  const lbl  = document.getElementById("history-count-lbl");
+  const history = getHistory();
+  if(history.length > 0){
+    wrap.style.display = "block";
+    lbl.textContent = `${history.length} cuento${history.length!==1?"s":""} guardado${history.length!==1?"s":""}`;
+  } else {
+    wrap.style.display = "none";
+  }
+}
+
+function renderHistory(){
+  const list = document.getElementById("history-list");
+  list.innerHTML = "";
+  const history = getHistory();
+  if(!history.length){
+    list.innerHTML=`<div style="text-align:center;padding:32px 20px;color:#9b6abf;font-family:'Fredoka One',cursive;font-size:18px">
+      Aún no hay cuentos guardados 😊<br>
+      <span style="font-size:14px;font-family:Nunito,sans-serif;font-weight:700">¡Termina un cuento para guardarlo!</span>
+    </div>`;
+    return;
+  }
+  history.forEach(entry => {
+    const card = document.createElement("div");
+    card.className = "hist-card";
+    card.innerHTML = `
+      <div style="width:56px;height:56px;border-radius:50%;background:${entry.cat.color}22;border:3px solid ${entry.cat.color};display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0">${entry.char.em}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Fredoka One',cursive;font-size:16px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${entry.title}</div>
+        <div style="font-family:'Nunito',sans-serif;font-size:12px;color:#aaa;font-weight:700;margin-top:2px">${entry.cat.emoji} ${entry.cat.label} · ${entry.profile.avatar} ${entry.profile.name} · ${entry.date}</div>
+        <div style="font-family:'Nunito',sans-serif;font-size:12px;color:#bbb;margin-top:1px">${entry.mode==="baby"?"🌟 Modo Bebé":"📚 Modo Niño"} · ${entry.paras.length} párrafos</div>
+      </div>
+      <div style="font-size:22px;flex-shrink:0">▶️</div>`;
+    card.onclick = () => openHistoryEntry(entry);
+    list.appendChild(card);
+  });
+}
+
+function openHistoryEntry(entry){
+  S.replayMode = true;
+  S.profile = entry.profile;
+  S.mode    = entry.mode;
+  S.cat     = entry.cat;
+  S.char    = entry.char;
+  S.title   = entry.title;
+  S.paras   = [...entry.paras];
+  S.parasRef= [...entry.paras];
+  S.story   = null;
+  S.chap    = 0;
+  S.finished= true;
+  S.speaking= false;
+  S.speakIdx= -1;
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  goTo("story");
+}
+
 // ===== STARS =====
 function stars(id){
   const c=document.getElementById(id);
@@ -300,10 +452,11 @@ function stars(id){
 function goTo(name){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById("screen-"+name).classList.add("active");
-  if(name==="profiles") { stars("st-profiles"); refreshKeyBtn(); }
+  if(name==="profiles") { stars("st-profiles"); refreshKeyBtn(); refreshHistoryBtn(); }
   if(name==="category") { stars("st-category"); renderCat(); }
   if(name==="character"){ stars("st-character"); renderChar(); }
   if(name==="story")    renderStory();
+  if(name==="history")  renderHistory();
   window.scrollTo(0,0);
 }
 
@@ -388,6 +541,7 @@ function renderChar(){
 function startStory(){
   S.story=null; S.title=""; S.paras=[]; S.parasRef=[];
   S.chap=0; S.finished=false; S.speaking=false; S.speakIdx=-1;
+  S.replayMode=false;
   if(window.speechSynthesis) window.speechSynthesis.cancel();
   goTo("story");
 }
@@ -402,34 +556,55 @@ function renderStory(){
     document.getElementById("head-child").classList.add("hidden");
     document.getElementById("head-baby").classList.remove("hidden");
     document.getElementById("hb-em").textContent    = S.char.em;
-    document.getElementById("hb-title").textContent = `El cuento de ${S.char.name}`;
+    document.getElementById("hb-title").textContent = S.title || `El cuento de ${S.char.name}`;
     document.getElementById("hb-meta").textContent  = `${S.profile.avatar} ${S.profile.name} · ${S.cat.emoji} ${S.cat.label}`;
     document.getElementById("fab").classList.remove("hidden");
-    document.getElementById("load-em").textContent  = "⭐";
-    document.getElementById("load-txt").textContent = "¡Espera un momento! ✨";
-    document.getElementById("load-txt").style.color = "#4ECDC4";
   } else {
     document.getElementById("head-baby").classList.add("hidden");
     document.getElementById("head-child").classList.remove("hidden");
     document.getElementById("hc-em").textContent    = S.char.em;
-    document.getElementById("hc-title").textContent = `El cuento de ${S.char.name}`;
+    document.getElementById("hc-title").textContent = S.title || `El cuento de ${S.char.name}`;
     document.getElementById("hc-meta").textContent  = `${S.profile.avatar} ${S.profile.name} · ${S.cat.emoji} ${S.cat.label}`;
     document.getElementById("fab").classList.add("hidden");
-    document.getElementById("load-em").textContent  = "✍️";
-    document.getElementById("load-txt").textContent = "Escribiendo el cuento...";
-    document.getElementById("load-txt").style.color = "#888";
   }
   document.getElementById("story-content").innerHTML="";
   document.getElementById("story-choices").innerHTML="";
   document.getElementById("story-choices").classList.add("hidden");
   document.getElementById("story-end").classList.add("hidden");
+  document.getElementById("replay-btn").classList.add("hidden");
   setLoad(false);
-  loadStory();
+
+  if(S.replayMode){
+    replayStory();
+  } else {
+    loadStory();
+  }
 }
 
+// ===== REPLAY SAVED STORY =====
+function replayStory(){
+  const isBaby = S.mode==="baby";
+  if(isBaby){
+    S.parasRef = [...S.paras];
+    S.paras.forEach((txt, i) => addParaBaby(txt, i));
+    // Auto-narrate first paragraph on load
+    setTimeout(() => speak(S.parasRef[0], 0, null), 500);
+  } else {
+    S.paras.forEach(txt => addParaChild(txt));
+  }
+  setTimeout(() => {
+    showEnd();
+    document.getElementById("replay-btn").classList.remove("hidden");
+  }, isBaby ? 400 : 600);
+}
+
+// ===== LOADING MESSAGES =====
+const LOAD_MSGS_BABY  = ["¡Espera un momento! ✨", "¡Mezclando magia! 🌟", "¡Ya casi está! 🎉"];
+const LOAD_MSGS_CHILD = ["Escribiendo el cuento...", "¡Mezclando aventuras! 🗺️", "¡Ya casi está! ✨"];
+let loadMsgTimer = null;
+let loadMsgIdx   = 0;
+
 // ===== OPENROUTER API =====
-// Lista de modelos gratuitos — si uno falla se prueba el siguiente
-// openrouter/free elige automáticamente el mejor modelo gratuito disponible
 const MODELS = [
   "openrouter/free",
   "google/gemini-2.0-flash-exp:free",
@@ -442,7 +617,6 @@ async function callAI(prompt) {
   const key = getKey();
   if (!key) { openKeyOverlay(); throw new Error("Sin API key"); }
 
-  // iOS Safari bloquea HTTP-Referer en fetch desde file:// — se omite en iOS
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const headers = {
     "Content-Type": "application/json",
@@ -650,12 +824,17 @@ function showEnd(){
   document.getElementById("end-em").textContent = isBaby?"🌟":"🏆";
   document.getElementById("end-txt").textContent = isBaby?"¡Muy bien!":"¡Cuento terminado!";
   document.getElementById("story-end").classList.remove("hidden");
+  if(!S.replayMode){
+    saveStoryToHistory();
+    const h = getHistory();
+    if(h.length > 0) document.getElementById("replay-btn").classList.remove("hidden");
+  }
   scrollEnd();
 }
 
 function goHome(){
   if(window.speechSynthesis) window.speechSynthesis.cancel();
-  S.mode=null; S.cat=null; S.char=null;
+  S.mode=null; S.cat=null; S.char=null; S.replayMode=false;
   goTo("profiles");
 }
 
@@ -663,8 +842,26 @@ function setLoad(v){
   S.loading=v;
   const el=document.getElementById("story-load");
   v ? el.classList.remove("hidden") : el.classList.add("hidden");
-  if(v) scrollEnd();
+
+  if(v){
+    const msgs = S.mode==="baby" ? LOAD_MSGS_BABY : LOAD_MSGS_CHILD;
+    const em   = S.char?.em || (S.mode==="baby" ? "⭐" : "✍️");
+    loadMsgIdx = 0;
+    document.getElementById("load-em").textContent  = em;
+    document.getElementById("load-txt").textContent = msgs[0];
+    if(loadMsgTimer) clearInterval(loadMsgTimer);
+    loadMsgTimer = setInterval(()=>{
+      loadMsgIdx = (loadMsgIdx + 1) % msgs.length;
+      const txt = document.getElementById("load-txt");
+      txt.style.opacity = "0";
+      setTimeout(()=>{ txt.textContent = msgs[loadMsgIdx]; txt.style.opacity = "1"; }, 200);
+    }, 2200);
+    scrollEnd();
+  } else {
+    if(loadMsgTimer){ clearInterval(loadMsgTimer); loadMsgTimer=null; }
+  }
 }
+
 function scrollEnd(){
   setTimeout(()=>document.getElementById("scroll-anchor")?.scrollIntoView({behavior:"smooth"}),60);
 }
@@ -677,7 +874,6 @@ function speak(txt,idx,onDone){
   u.lang="es-ES"; u.rate=0.82; u.pitch=1.2;
   setSpeaking(true,idx);
   let done=false;
-  // Timeout de seguridad: si onDone no se llama en 8s, continúa igualmente
   const safetyTimer = setTimeout(()=>{
     if(!done){ done=true; setSpeaking(false); onDone?.(); }
   }, Math.max(txt.length * 120, 3000));
@@ -715,7 +911,7 @@ document.head.appendChild(sty);
 renderProfiles();
 stars("st-profiles");
 refreshKeyBtn();
-// Si no hay key al cargar, mostrar overlay automáticamente
+refreshHistoryBtn();
 if(!getKey()) openKeyOverlay();
 </script>
 </body>
