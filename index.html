@@ -14,17 +14,15 @@
     @keyframes twinkle{0%,100%{opacity:0.1}50%{opacity:0.3}}
     @keyframes wavebar{from{height:5px}to{height:20px}}
     @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-    /* Loading animation */
     @keyframes orbit{from{transform:rotate(var(--angle)) translateX(54px) rotate(calc(-1*var(--angle)))}to{transform:rotate(calc(var(--angle) + 360deg)) translateX(54px) rotate(calc(-1*(var(--angle) + 360deg)))}}
     @keyframes dotPulse{0%,100%{transform:scale(0.5);opacity:0.35}50%{transform:scale(1.1);opacity:1}}
-    @keyframes loadFade{0%,100%{opacity:0;transform:translateY(6px)}15%,85%{opacity:1;transform:translateY(0)}}
     .load-sparkles{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
     .load-spark{position:absolute;font-size:18px;animation:orbit 2.4s linear infinite}
     .load-dots{display:flex;gap:10px;justify-content:center;margin-top:14px}
     .load-dots span{width:11px;height:11px;border-radius:50%;animation:dotPulse 1.2s ease infinite}
     .load-dots span:nth-child(2){animation-delay:0.2s}
     .load-dots span:nth-child(3){animation-delay:0.4s}
-    #load-txt{animation:none;transition:opacity 0.3s}
+    #load-txt{transition:opacity 0.3s}
     input:focus{outline:none}
     .screen{display:none}.screen.active{display:block}
     .stars-bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
@@ -50,10 +48,8 @@
     #fab.speaking{background:linear-gradient(135deg,#FF6B9D,#ff8fb3);box-shadow:0 6px 20px rgba(255,107,157,0.5);animation:pulse 1s ease-in-out infinite}
     #home-fab{position:fixed;top:18px;right:18px;z-index:100;border:none;border-radius:50%;width:46px;height:46px;font-size:21px;cursor:pointer;background:rgba(255,255,255,0.88);box-shadow:0 4px 14px rgba(0,0,0,0.18);display:flex;align-items:center;justify-content:center;transition:all 0.15s}
     #home-fab:active{transform:scale(0.9)}
-    /* History card */
     .hist-card{background:white;border-radius:22px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(0,0,0,0.1);animation:fadeSlide 0.4s ease;cursor:pointer;transition:transform 0.12s,box-shadow 0.12s}
     .hist-card:active{transform:scale(0.97);box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-    /* API Key overlay */
     #apikey-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px}
     #apikey-overlay.hidden{display:none}
     #apikey-box{background:white;border-radius:28px;padding:28px 22px;width:100%;max-width:400px;box-shadow:0 16px 48px rgba(0,0,0,0.3);animation:fadeSlide 0.3s ease}
@@ -65,15 +61,13 @@
 <div id="apikey-overlay">
   <div id="apikey-box">
     <div style="text-align:center;margin-bottom:18px">
-      <div style="font-size:56px">🔑</div>
-      <h2 style="font-family:'Fredoka One',cursive;font-size:24px;color:#333;margin:8px 0 6px">Configura la app</h2>
+      <div style="font-size:56px">🤖</div>
+      <h2 style="font-family:'Fredoka One',cursive;font-size:24px;color:#333;margin:8px 0 6px">Cuentos con IA</h2>
       <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#666;line-height:1.6">
-        Esta app usa IA para crear los cuentos.<br>
-        Necesitas una clave <strong>gratuita</strong> de OpenRouter.<br><br>
+        Con una API Key de OpenRouter, la IA crea cuentos <strong>únicos</strong> cada vez.<br><br>
         1️⃣ Ve a <a href="https://openrouter.ai/keys" target="_blank" style="color:#A78BFA;font-weight:800">openrouter.ai/keys</a><br>
         2️⃣ Crea una cuenta (gratis)<br>
-        3️⃣ Crea una API Key<br>
-        4️⃣ Pégala aquí abajo 👇
+        3️⃣ Crea una API Key y pégala aquí 👇
       </p>
     </div>
     <input id="key-input" type="password" placeholder="sk-or-v1-..." maxlength="300"
@@ -84,11 +78,11 @@
     </p>
     <button id="save-key-btn" onclick="saveKey()" disabled
       style="width:100%;background:#ddd;border:none;border-radius:16px;padding:13px;font-family:'Fredoka One',cursive;font-size:18px;color:white;cursor:default;transition:all 0.2s;margin-bottom:8px">
-      ¡Guardar y empezar! 🚀
+      ¡Activar cuentos con IA! 🚀
     </button>
-    <button onclick="closeKeyOverlay()" id="skip-key-btn" class="hidden"
-      style="width:100%;background:none;border:none;font-family:'Nunito',sans-serif;font-size:14px;color:#bbb;cursor:pointer">
-      Ya tengo la clave guardada — continuar
+    <button onclick="closeKeyOverlay()"
+      style="width:100%;background:none;border:2px solid #eee;border-radius:16px;padding:11px;font-family:'Fredoka One',cursive;font-size:15px;color:#aaa;cursor:pointer">
+      📖 Usar cuentos clásicos (sin IA)
     </button>
   </div>
 </div>
@@ -105,7 +99,6 @@
       </div>
       <div id="profiles-list" style="display:flex;flex-direction:column;gap:13px;margin-bottom:13px"></div>
 
-      <!-- Custom profile -->
       <div id="custom-toggle">
         <button onclick="showCustom()"
           style="width:100%;background:rgba(255,255,255,0.18);border:3px dashed rgba(255,255,255,0.6);border-radius:28px;padding:15px 20px;display:flex;align-items:center;gap:15px;cursor:pointer"
@@ -134,7 +127,6 @@
         </div>
       </div>
 
-      <!-- History button (shown only if there are saved stories) -->
       <div id="history-btn-wrap" style="display:none;margin-top:10px">
         <button onclick="goTo('history')"
           style="width:100%;background:rgba(255,255,255,0.18);border:2px solid rgba(255,255,255,0.5);border-radius:28px;padding:13px 20px;display:flex;align-items:center;gap:12px;cursor:pointer"
@@ -151,7 +143,7 @@
       <div style="text-align:center;margin-top:14px">
         <button onclick="openKeyOverlay()" id="key-status-btn"
           style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);border-radius:20px;padding:7px 16px;font-family:'Nunito',sans-serif;font-size:13px;color:rgba(255,255,255,0.85);cursor:pointer">
-          🔑 Configurar API Key
+          🔑 Activar cuentos con IA
         </button>
       </div>
     </div>
@@ -214,12 +206,8 @@
 <!-- ====== SCREEN: STORY ====== -->
 <div id="screen-story" class="screen">
   <div id="story-wrap" style="min-height:100vh;padding-bottom:130px">
-
     <button id="home-fab" onclick="goHome()" title="Inicio">🏠</button>
-
-    <!-- Header -->
     <div id="story-head" style="padding:20px 20px 26px;border-radius:0 0 32px 32px;box-shadow:0 8px 24px rgba(0,0,0,0.15)">
-      <!-- child header -->
       <div id="head-child" style="display:flex;align-items:center;gap:12px;max-width:400px;margin:0 auto">
         <div id="hc-em" style="font-size:36px"></div>
         <div>
@@ -227,7 +215,6 @@
           <div id="hc-meta" style="font-family:'Nunito',sans-serif;font-size:13px;color:rgba(255,255,255,0.9);font-weight:700"></div>
         </div>
       </div>
-      <!-- baby header -->
       <div id="head-baby" class="hidden" style="max-width:440px;margin:0 auto;text-align:center">
         <div id="hb-em" style="font-size:60px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2))"></div>
         <h1 id="hb-title" style="font-family:'Fredoka One',cursive;font-size:23px;color:white;margin:8px 0 4px;text-shadow:0 2px 8px rgba(0,0,0,0.2)"></h1>
@@ -237,7 +224,6 @@
 
     <div id="story-content" style="max-width:440px;margin:0 auto;padding:22px 20px"></div>
 
-    <!-- Loading mejorado -->
     <div id="story-load" class="hidden" style="text-align:center;padding:40px 20px">
       <div style="position:relative;display:inline-block;width:90px;height:90px;margin-bottom:6px">
         <div id="load-em" style="font-size:64px;line-height:90px" class="bounce-el">✍️</div>
@@ -251,7 +237,7 @@
         </div>
       </div>
       <p id="load-txt" style="font-family:'Fredoka One',cursive;font-size:21px;color:#888;margin-top:4px;min-height:30px"></p>
-      <div id="load-dots" class="load-dots">
+      <div class="load-dots">
         <span style="background:#FFB347"></span>
         <span style="background:#FF6B9D"></span>
         <span style="background:#4ECDC4"></span>
@@ -302,6 +288,97 @@ const CHARS = {
   travel:      [{id:"space",name:"El Espacio",em:"🚀"},{id:"jungle",name:"La Selva",em:"🌿"},{id:"ocean",name:"El Océano",em:"🌊"},{id:"mountains",name:"Las Montañas",em:"⛰️"}],
 };
 
+// ===== CUENTOS LOCALES =====
+// Un arco de 4 capítulos por categoría.
+// {nombre} = nombre del niño,  {charName} = nombre del personaje.
+// Frases cortas para que funcionen en modo bebé y modo niño.
+const STORY_ARCS = {
+  cartoons: [
+    { title:"{charName} y el tesoro del parque",
+      paragraphs:["¡{nombre} y {charName} jugaban juntos!","De repente vieron un mapa. ¡Pum!","El mapa llevaba a un tesoro secreto."],
+      question:"¿Qué hacen con el mapa?",
+      choices:[{emoji:"🗺️",text:"Seguir el mapa corriendo"},{emoji:"👫",text:"Llamar a más amigos"},{emoji:"🔦",text:"Buscar con una linterna"}] },
+    { paragraphs:["Siguieron el mapa muy emocionados.","Llegaron a un árbol enorme. ¡Uau!","¡Había una caja llena de sorpresas!"],
+      question:"¿Qué hay dentro de la caja?",
+      choices:[{emoji:"🍭",text:"Montones de chuches"},{emoji:"🎮",text:"Juguetes mágicos"},{emoji:"🌈",text:"Pinturas de colores"}] },
+    { paragraphs:["{charName} repartió chuches para todos.","¡Los amigos vinieron corriendo!","¡Qué fiesta tan divertida, yupi!"],
+      question:"¿Cómo termina la fiesta?",
+      choices:[{emoji:"🎆",text:"Con fuegos de colores"},{emoji:"🎵",text:"Cantando todos juntos"},{emoji:"🎂",text:"Con un pastel gigante"}] },
+    { paragraphs:["Cantaron la canción favorita de {nombre}.","¡{charName} le dio un gran abrazo!","¡Fue el mejor día del año!"],
+      question:"", choices:[] }
+  ],
+  disney: [
+    { title:"La magia de {charName}",
+      paragraphs:["{charName} encontró a {nombre} en el reino.","—¡Necesito tu ayuda! —dijo {charName}.","¡La magia del castillo había desaparecido!"],
+      question:"¿Dónde buscan la magia?",
+      choices:[{emoji:"🌊",text:"En el lago encantado"},{emoji:"🌲",text:"En el bosque de hadas"},{emoji:"⭐",text:"En lo alto de la torre"}] },
+    { paragraphs:["Fueron juntos al lago encantado.","Una estrella brillaba bajo el agua. ¡Oh!","{nombre} y {charName} la sacaron con cuidado."],
+      question:"¿Qué hace la estrella mágica?",
+      choices:[{emoji:"✨",text:"Concede un deseo especial"},{emoji:"🌈",text:"Crea un arcoíris enorme"},{emoji:"🦋",text:"Llama a los animales"}] },
+    { paragraphs:["La estrella devolvió la magia. ¡Puf!","El castillo brilló más que nunca.","{charName} abrazó a {nombre} muy fuerte."],
+      question:"¿Cómo celebran juntos?",
+      choices:[{emoji:"💃",text:"Con un gran baile real"},{emoji:"🎊",text:"Con una fiesta de hadas"},{emoji:"🌟",text:"Viendo las estrellas"}] },
+    { paragraphs:["Bailaron toda la noche en el castillo.","Las hadas cantaron canciones preciosas.","¡El reino vivió feliz para siempre!"],
+      question:"", choices:[] }
+  ],
+  superheroes: [
+    { title:"La misión de {charName}",
+      paragraphs:["{charName} escuchó una alarma. ¡Ding!","—¡{nombre}, necesito tu ayuda! —llamó.","¡Un monstruo juguetón andaba por la ciudad!"],
+      question:"¿Cómo llegan hasta el monstruo?",
+      choices:[{emoji:"🦅",text:"Volando muy rápido"},{emoji:"🏃",text:"Corriendo por los tejados"},{emoji:"🚗",text:"En el coche superveloz"}] },
+    { paragraphs:["Volaron hasta donde estaba el monstruo.","¡El monstruo solo quería jugar, buuu!","{charName} le habló con mucha calma."],
+      question:"¿Cómo se hacen amigos del monstruo?",
+      choices:[{emoji:"⚽",text:"Jugando al fútbol"},{emoji:"🎨",text:"Pintando juntos"},{emoji:"🎵",text:"Cantando una canción"}] },
+    { paragraphs:["Jugaron al fútbol en el parque.","¡El monstruo marcó un golazo! ¡Gol!","{nombre} y {charName} ganaron un nuevo amigo."],
+      question:"¿Qué hacen al final del día?",
+      choices:[{emoji:"🌅",text:"Ver el atardecer juntos"},{emoji:"🍕",text:"Cenar pizza todos"},{emoji:"🎉",text:"Hacer una fiesta"}] },
+    { paragraphs:["Cenaron pizza todos juntos. ¡Ñam!","La ciudad aplaudió a {charName} y {nombre}.","¡Los mejores héroes del mundo!"],
+      question:"", choices:[] }
+  ],
+  paw: [
+    { title:"El rescate de {charName}",
+      paragraphs:["{charName} recibió un aviso urgente.","—¡{nombre}, hay un gatito perdido! —ladró.","¡Había que rescatarlo muy pronto!"],
+      question:"¿Por dónde buscan al gatito?",
+      choices:[{emoji:"🌲",text:"Por el bosque"},{emoji:"🏔️",text:"Por las montañas"},{emoji:"🌊",text:"Por el río"}] },
+    { paragraphs:["Buscaron por el bosque entero.","¡Oyeron un pequeño miau!","¡El gatito estaba en un árbol muy alto!"],
+      question:"¿Cómo bajan al gatito?",
+      choices:[{emoji:"🚁",text:"Con el helicóptero"},{emoji:"🪜",text:"Con una escalera larga"},{emoji:"💪",text:"Trepando al árbol"}] },
+    { paragraphs:["{charName} subió con la escalera. ¡Arriba!","El gatito ronroneó muy feliz. ¡Purr!","{nombre} le dio un abrazo enorme."],
+      question:"¿Qué hacen con el gatito?",
+      choices:[{emoji:"🏠",text:"Llevarlo con su dueño"},{emoji:"🐾",text:"Cuidarlo en la patrulla"},{emoji:"🎀",text:"Hacerle una fiesta"}] },
+    { paragraphs:["Encontraron al dueño del gatito.","¡Qué alegría tan grande! ¡Yupi!","¡{charName} y {nombre} salvaron el día!"],
+      question:"", choices:[] }
+  ],
+  sports: [
+    { title:"El gran partido de {nombre}",
+      paragraphs:["{nombre} llegó al campo muy emocionado.","{charName} le esperaba para entrenar.","—¡Hoy ganaremos juntos! —dijo {charName}."],
+      question:"¿Cómo entrena {nombre}?",
+      choices:[{emoji:"⚽",text:"Practicando chutes"},{emoji:"🏃",text:"Entrenando velocidad"},{emoji:"🧠",text:"Aprendiendo jugadas"}] },
+    { paragraphs:["{nombre} entrenó con mucho esfuerzo.","Aprendió a chutar superfuerte. ¡Bum!","¡El equipo estaba listo para ganar!"],
+      question:"¡Empieza el partido! ¿Qué hace {nombre}?",
+      choices:[{emoji:"⚡",text:"¡Marcar el primer gol!"},{emoji:"🤝",text:"Pasar a los compañeros"},{emoji:"🧤",text:"Defender la portería"}] },
+    { paragraphs:["¡{nombre} marcó un golazo increíble!","¡El estadio entero se levantó! ¡Gol!","¡El equipo ganó gracias a {nombre}!"],
+      question:"¿Cómo celebran la victoria?",
+      choices:[{emoji:"🏆",text:"Levantando el trofeo"},{emoji:"🎉",text:"Con una vuelta de honor"},{emoji:"🥤",text:"Con un gran festín"}] },
+    { paragraphs:["{nombre} levantó el trofeo con orgullo.","Sus amigos le corearon muy fuerte.","¡El campeón más querido del mundo!"],
+      question:"", choices:[] }
+  ],
+  travel: [
+    { title:"La expedición de {nombre} y {charName}",
+      paragraphs:["{nombre} y {charName} prepararon sus mochilas.","¡Iban a explorar un lugar increíble!","Tenían un mapa lleno de misterios."],
+      question:"¿Cómo llegan al lugar misterioso?",
+      choices:[{emoji:"🚀",text:"En cohete supersónico"},{emoji:"🎈",text:"En globo gigante"},{emoji:"🚂",text:"En tren mágico"}] },
+    { paragraphs:["Viajaron en un globo de colores. ¡Swoosh!","Desde arriba todo era precioso.","Aterrizaron en un valle secreto."],
+      question:"¿Qué encuentran en el valle?",
+      choices:[{emoji:"🦕",text:"Dinosaurios amistosos"},{emoji:"🏰",text:"Un castillo mágico"},{emoji:"🌸",text:"Un jardín encantado"}] },
+    { paragraphs:["¡Había dinosaurios que querían jugar!","Los dinosaurios eran muy simpáticos. ¡Roar!","{nombre} y {charName} jugaron con ellos."],
+      question:"¿Qué hacen antes de volver?",
+      choices:[{emoji:"📸",text:"Hacer fotos del recuerdo"},{emoji:"🌱",text:"Plantar un árbol juntos"},{emoji:"🎵",text:"Enseñarles canciones"}] },
+    { paragraphs:["{nombre} plantó un árbol con los dinosaurios.","Los dinosaurios prometieron cuidarlo. ¡Roar!","¡La mejor aventura del mundo mundial!"],
+      question:"", choices:[] }
+  ]
+};
+
 // ===== STATE =====
 let S = {
   profile:null, mode:null, cat:null, char:null,
@@ -310,100 +387,109 @@ let S = {
   speaking:false, speakIdx:-1,
   customMode:null,
   replayMode:false,
+  usingLocal:false,
 };
+
+// ===== LOCAL STORIES HELPERS =====
+function getLocalArc(){ return STORY_ARCS[S.cat?.id] || null; }
+
+function fillNames(str){
+  return str
+    .replace(/\{nombre\}/g, S.profile?.name || "")
+    .replace(/\{charName\}/g, S.char?.name || "");
+}
+
+function genStoryLocal(){
+  const arc = getLocalArc();
+  if(!arc) return null;
+  const chapIdx = Math.min(S.chap, arc.length - 1);
+  const c = arc[chapIdx];
+  S.usingLocal = true;
+  const result = {
+    paragraphs: c.paragraphs.map(fillNames),
+    question:   fillNames(c.question),
+    choices:    c.choices.map(ch => ({...ch, text:fillNames(ch.text)}))
+  };
+  if(chapIdx === 0) result.title = fillNames(c.title);
+  return result;
+}
 
 // ===== API KEY =====
 const KEY_LS = "cc_openrouter_key";
 function getKey(){ return localStorage.getItem(KEY_LS)||""; }
 function openKeyOverlay(){
-  const k = getKey();
-  document.getElementById("key-input").value = k;
+  const k=getKey();
+  document.getElementById("key-input").value=k;
   checkKey();
-  if(k) document.getElementById("skip-key-btn").classList.remove("hidden");
-  else  document.getElementById("skip-key-btn").classList.add("hidden");
   document.getElementById("apikey-overlay").classList.remove("hidden");
 }
 function closeKeyOverlay(){ document.getElementById("apikey-overlay").classList.add("hidden"); }
 function checkKey(){
-  const v = document.getElementById("key-input").value.trim();
-  const ok = v.startsWith("sk-or");
-  const btn = document.getElementById("save-key-btn");
-  btn.disabled = !ok;
-  btn.style.background = ok ? "#A78BFA":"#ddd";
-  btn.style.cursor     = ok ? "pointer":"default";
-  btn.style.boxShadow  = ok ? "0 4px 0 #7c5cbf":"none";
+  const v=document.getElementById("key-input").value.trim();
+  const ok=v.startsWith("sk-or");
+  const btn=document.getElementById("save-key-btn");
+  btn.disabled=!ok; btn.style.background=ok?"#A78BFA":"#ddd";
+  btn.style.cursor=ok?"pointer":"default";
+  btn.style.boxShadow=ok?"0 4px 0 #7c5cbf":"none";
 }
 function saveKey(){
-  const v = document.getElementById("key-input").value.trim();
+  const v=document.getElementById("key-input").value.trim();
   if(!v.startsWith("sk-or")) return;
-  localStorage.setItem(KEY_LS, v);
-  closeKeyOverlay();
-  refreshKeyBtn();
+  localStorage.setItem(KEY_LS,v);
+  closeKeyOverlay(); refreshKeyBtn();
 }
 function refreshKeyBtn(){
-  const btn = document.getElementById("key-status-btn");
-  const has = !!getKey();
-  btn.textContent = has ? "✅ API Key configurada" : "🔑 Configurar API Key";
-  btn.style.background = has ? "rgba(78,205,196,0.25)" : "rgba(255,255,255,0.15)";
+  const btn=document.getElementById("key-status-btn");
+  const has=!!getKey();
+  btn.textContent=has?"✅ Cuentos con IA activados":"🔑 Activar cuentos con IA";
+  btn.style.background=has?"rgba(78,205,196,0.25)":"rgba(255,255,255,0.15)";
 }
 
 // ===== HISTORY =====
-const HISTORY_LS = "cc_history";
-const MAX_HISTORY = 8;
-
+const HISTORY_LS="cc_history", MAX_HISTORY=8;
 function getHistory(){
-  try{ return JSON.parse(localStorage.getItem(HISTORY_LS)||"[]"); }
-  catch{ return []; }
+  try{ return JSON.parse(localStorage.getItem(HISTORY_LS)||"[]"); } catch{ return []; }
 }
-
 function saveStoryToHistory(){
   if(!S.title||!S.paras.length||S.replayMode) return;
-  const entry = {
-    id: Date.now(),
-    title: S.title,
-    profile: {name:S.profile.name, avatar:S.profile.avatar},
-    cat: {id:S.cat.id, label:S.cat.label, emoji:S.cat.emoji, color:S.cat.color},
-    char: {name:S.char.name, em:S.char.em},
-    mode: S.mode,
-    paras: [...S.paras],
-    date: new Date().toLocaleDateString('es-ES',{day:'numeric',month:'short'})
+  const entry={
+    id:Date.now(), title:S.title,
+    profile:{name:S.profile.name,avatar:S.profile.avatar},
+    cat:{id:S.cat.id,label:S.cat.label,emoji:S.cat.emoji,color:S.cat.color},
+    char:{name:S.char.name,em:S.char.em},
+    mode:S.mode, paras:[...S.paras],
+    date:new Date().toLocaleDateString('es-ES',{day:'numeric',month:'short'})
   };
-  let history = getHistory();
-  // Evitar duplicados por título+personaje recientes
-  history = history.filter(h => !(h.title===entry.title && h.char.name===entry.char.name));
+  let history=getHistory();
+  history=history.filter(h=>!(h.title===entry.title&&h.char.name===entry.char.name));
   history.unshift(entry);
-  if(history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
-  localStorage.setItem(HISTORY_LS, JSON.stringify(history));
+  if(history.length>MAX_HISTORY) history=history.slice(0,MAX_HISTORY);
+  localStorage.setItem(HISTORY_LS,JSON.stringify(history));
   refreshHistoryBtn();
 }
-
 function refreshHistoryBtn(){
-  const wrap = document.getElementById("history-btn-wrap");
-  const lbl  = document.getElementById("history-count-lbl");
-  const history = getHistory();
-  if(history.length > 0){
-    wrap.style.display = "block";
-    lbl.textContent = `${history.length} cuento${history.length!==1?"s":""} guardado${history.length!==1?"s":""}`;
-  } else {
-    wrap.style.display = "none";
-  }
+  const wrap=document.getElementById("history-btn-wrap");
+  const lbl=document.getElementById("history-count-lbl");
+  const history=getHistory();
+  if(history.length>0){
+    wrap.style.display="block";
+    lbl.textContent=`${history.length} cuento${history.length!==1?"s":""} guardado${history.length!==1?"s":""}`;
+  } else { wrap.style.display="none"; }
 }
-
 function renderHistory(){
-  const list = document.getElementById("history-list");
-  list.innerHTML = "";
-  const history = getHistory();
+  const list=document.getElementById("history-list");
+  list.innerHTML="";
+  const history=getHistory();
   if(!history.length){
     list.innerHTML=`<div style="text-align:center;padding:32px 20px;color:#9b6abf;font-family:'Fredoka One',cursive;font-size:18px">
       Aún no hay cuentos guardados 😊<br>
-      <span style="font-size:14px;font-family:Nunito,sans-serif;font-weight:700">¡Termina un cuento para guardarlo!</span>
-    </div>`;
+      <span style="font-size:14px;font-family:Nunito,sans-serif;font-weight:700">¡Termina un cuento para guardarlo!</span></div>`;
     return;
   }
-  history.forEach(entry => {
-    const card = document.createElement("div");
-    card.className = "hist-card";
-    card.innerHTML = `
+  history.forEach(entry=>{
+    const card=document.createElement("div");
+    card.className="hist-card";
+    card.innerHTML=`
       <div style="width:56px;height:56px;border-radius:50%;background:${entry.cat.color}22;border:3px solid ${entry.cat.color};display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0">${entry.char.em}</div>
       <div style="flex:1;min-width:0">
         <div style="font-family:'Fredoka One',cursive;font-size:16px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${entry.title}</div>
@@ -411,25 +497,16 @@ function renderHistory(){
         <div style="font-family:'Nunito',sans-serif;font-size:12px;color:#bbb;margin-top:1px">${entry.mode==="baby"?"🌟 Modo Bebé":"📚 Modo Niño"} · ${entry.paras.length} párrafos</div>
       </div>
       <div style="font-size:22px;flex-shrink:0">▶️</div>`;
-    card.onclick = () => openHistoryEntry(entry);
+    card.onclick=()=>openHistoryEntry(entry);
     list.appendChild(card);
   });
 }
-
 function openHistoryEntry(entry){
-  S.replayMode = true;
-  S.profile = entry.profile;
-  S.mode    = entry.mode;
-  S.cat     = entry.cat;
-  S.char    = entry.char;
-  S.title   = entry.title;
-  S.paras   = [...entry.paras];
-  S.parasRef= [...entry.paras];
-  S.story   = null;
-  S.chap    = 0;
-  S.finished= true;
-  S.speaking= false;
-  S.speakIdx= -1;
+  S.replayMode=true;
+  S.profile=entry.profile; S.mode=entry.mode;
+  S.cat=entry.cat; S.char=entry.char;
+  S.title=entry.title; S.paras=[...entry.paras]; S.parasRef=[...entry.paras];
+  S.story=null; S.chap=0; S.finished=true; S.speaking=false; S.speakIdx=-1;
   if(window.speechSynthesis) window.speechSynthesis.cancel();
   goTo("story");
 }
@@ -443,8 +520,7 @@ function stars(id){
     const e=document.createElement("div");
     e.className="star";
     e.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;font-size:${Math.random()*20+8}px;--dur:${(Math.random()*3+2).toFixed(1)}s;--delay:${(Math.random()*3).toFixed(1)}s`;
-    e.textContent="⭐";
-    c.appendChild(e);
+    e.textContent="⭐"; c.appendChild(e);
   }
 }
 
@@ -478,18 +554,14 @@ function renderProfiles(){
     list.appendChild(b);
   });
 }
-function pickProfile(p){
-  if(!getKey()){ openKeyOverlay(); return; }
-  S.profile=p; S.mode=p.mode;
-  goTo("category");
-}
+// Sin API key ya no bloqueamos — los cuentos locales no la necesitan
+function pickProfile(p){ S.profile=p; S.mode=p.mode; goTo("category"); }
 
-// Custom
 function showCustom(){ document.getElementById("custom-toggle").classList.add("hidden"); document.getElementById("custom-form").classList.remove("hidden"); document.getElementById("cname").focus(); }
 function hideCustom(){ document.getElementById("custom-toggle").classList.remove("hidden"); document.getElementById("custom-form").classList.add("hidden"); document.getElementById("cname").value=""; S.customMode=null; checkCustom(); }
 function setCustomMode(m){
   S.customMode=m;
-  const cb=document.getElementById("mb-child"), bb=document.getElementById("mb-baby");
+  const cb=document.getElementById("mb-child"),bb=document.getElementById("mb-baby");
   cb.style.background=m==="child"?"#FF6B9D":"#FFE4F0"; cb.style.color=m==="child"?"white":"#FF6B9D";
   bb.style.background=m==="baby"?"#4ECDC4":"#E0F7F5";  bb.style.color=m==="baby"?"white":"#4ECDC4";
   checkCustom();
@@ -502,7 +574,6 @@ function checkCustom(){
 function submitCustom(){
   const name=document.getElementById("cname").value.trim();
   if(!name||!S.customMode) return;
-  if(!getKey()){ openKeyOverlay(); return; }
   S.profile={id:99,name,avatar:"🧒",color:"#A78BFA",bg:"#EDE9FE",mode:S.customMode};
   S.mode=S.customMode;
   hideCustom(); goTo("category");
@@ -541,30 +612,36 @@ function renderChar(){
 function startStory(){
   S.story=null; S.title=""; S.paras=[]; S.parasRef=[];
   S.chap=0; S.finished=false; S.speaking=false; S.speakIdx=-1;
-  S.replayMode=false;
+  S.replayMode=false; S.usingLocal=false;
   if(window.speechSynthesis) window.speechSynthesis.cancel();
   goTo("story");
 }
 
-function renderStory(){
-  const isBaby = S.mode==="baby";
-  const sw=document.getElementById("story-wrap"), sh=document.getElementById("story-head");
-  sw.style.background = isBaby ? "linear-gradient(180deg,#E8F4FD,#B8E0FF)" : "linear-gradient(180deg,#FFFDE7,#FFF9C4)";
-  sh.style.background = isBaby ? "linear-gradient(135deg,#4ECDC4,#44b8af)" : `linear-gradient(135deg,${S.cat.color},${S.cat.color}cc)`;
+function updateStoryMeta(){
+  const badge=S.usingLocal?" · 📖":" · 🤖";
+  const base=`${S.profile.avatar} ${S.profile.name} · ${S.cat.emoji} ${S.cat.label}`;
+  if(S.mode==="baby") document.getElementById("hb-meta").textContent=base+badge;
+  else                document.getElementById("hc-meta").textContent=base+badge;
+}
 
+function renderStory(){
+  const isBaby=S.mode==="baby";
+  const sw=document.getElementById("story-wrap"),sh=document.getElementById("story-head");
+  sw.style.background=isBaby?"linear-gradient(180deg,#E8F4FD,#B8E0FF)":"linear-gradient(180deg,#FFFDE7,#FFF9C4)";
+  sh.style.background=isBaby?"linear-gradient(135deg,#4ECDC4,#44b8af)":`linear-gradient(135deg,${S.cat.color},${S.cat.color}cc)`;
   if(isBaby){
     document.getElementById("head-child").classList.add("hidden");
     document.getElementById("head-baby").classList.remove("hidden");
-    document.getElementById("hb-em").textContent    = S.char.em;
-    document.getElementById("hb-title").textContent = S.title || `El cuento de ${S.char.name}`;
-    document.getElementById("hb-meta").textContent  = `${S.profile.avatar} ${S.profile.name} · ${S.cat.emoji} ${S.cat.label}`;
+    document.getElementById("hb-em").textContent=S.char.em;
+    document.getElementById("hb-title").textContent=S.title||`El cuento de ${S.char.name}`;
+    document.getElementById("hb-meta").textContent=`${S.profile.avatar} ${S.profile.name} · ${S.cat.emoji} ${S.cat.label}`;
     document.getElementById("fab").classList.remove("hidden");
   } else {
     document.getElementById("head-baby").classList.add("hidden");
     document.getElementById("head-child").classList.remove("hidden");
-    document.getElementById("hc-em").textContent    = S.char.em;
-    document.getElementById("hc-title").textContent = S.title || `El cuento de ${S.char.name}`;
-    document.getElementById("hc-meta").textContent  = `${S.profile.avatar} ${S.profile.name} · ${S.cat.emoji} ${S.cat.label}`;
+    document.getElementById("hc-em").textContent=S.char.em;
+    document.getElementById("hc-title").textContent=S.title||`El cuento de ${S.char.name}`;
+    document.getElementById("hc-meta").textContent=`${S.profile.avatar} ${S.profile.name} · ${S.cat.emoji} ${S.cat.label}`;
     document.getElementById("fab").classList.add("hidden");
   }
   document.getElementById("story-content").innerHTML="";
@@ -573,104 +650,76 @@ function renderStory(){
   document.getElementById("story-end").classList.add("hidden");
   document.getElementById("replay-btn").classList.add("hidden");
   setLoad(false);
-
-  if(S.replayMode){
-    replayStory();
-  } else {
-    loadStory();
-  }
+  if(S.replayMode) replayStory();
+  else             loadStory();
 }
 
-// ===== REPLAY SAVED STORY =====
 function replayStory(){
-  const isBaby = S.mode==="baby";
+  const isBaby=S.mode==="baby";
   if(isBaby){
-    S.parasRef = [...S.paras];
-    S.paras.forEach((txt, i) => addParaBaby(txt, i));
-    // Auto-narrate first paragraph on load
-    setTimeout(() => speak(S.parasRef[0], 0, null), 500);
+    S.parasRef=[...S.paras];
+    S.paras.forEach((txt,i)=>addParaBaby(txt,i));
+    setTimeout(()=>speak(S.parasRef[0],0,null),500);
   } else {
-    S.paras.forEach(txt => addParaChild(txt));
+    S.paras.forEach(txt=>addParaChild(txt));
   }
-  setTimeout(() => {
-    showEnd();
-    document.getElementById("replay-btn").classList.remove("hidden");
-  }, isBaby ? 400 : 600);
+  setTimeout(()=>{ showEnd(); document.getElementById("replay-btn").classList.remove("hidden"); }, isBaby?400:600);
 }
 
-// ===== LOADING MESSAGES =====
-const LOAD_MSGS_BABY  = ["¡Espera un momento! ✨", "¡Mezclando magia! 🌟", "¡Ya casi está! 🎉"];
-const LOAD_MSGS_CHILD = ["Escribiendo el cuento...", "¡Mezclando aventuras! 🗺️", "¡Ya casi está! ✨"];
-let loadMsgTimer = null;
-let loadMsgIdx   = 0;
+// ===== LOADING =====
+const LOAD_MSGS_BABY =["¡Espera un momento! ✨","¡Mezclando magia! 🌟","¡Ya casi está! 🎉"];
+const LOAD_MSGS_CHILD=["Escribiendo el cuento...","¡Mezclando aventuras! 🗺️","¡Ya casi está! ✨"];
+let loadMsgTimer=null, loadMsgIdx=0;
 
 // ===== OPENROUTER API =====
-const MODELS = [
-  "openrouter/free",
-  "google/gemini-2.0-flash-exp:free",
-  "meta-llama/llama-3.3-70b-instruct:free",
-  "deepseek/deepseek-r1:free",
-];
-let modelIdx = 0;
+const MODELS=["openrouter/free","google/gemini-2.0-flash-exp:free","meta-llama/llama-3.3-70b-instruct:free","deepseek/deepseek-r1:free"];
+let modelIdx=0;
 
-async function callAI(prompt) {
-  const key = getKey();
-  if (!key) { openKeyOverlay(); throw new Error("Sin API key"); }
-
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer " + key,
-  };
-  if (!isIOS) {
-    headers["HTTP-Referer"] = window.location.origin || "https://cuentacuentos.app";
-    headers["X-Title"] = "Cuentacuentos";
-  }
-
-  let lastErr = "Error desconocido";
-  for (let i = 0; i < MODELS.length; i++) {
-    const model = MODELS[(modelIdx + i) % MODELS.length];
-    try {
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ model, max_tokens: 1000, messages: [{ role: "user", content: prompt }] })
+async function callAI(prompt){
+  const key=getKey();
+  if(!key) throw new Error("Sin API key");
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  const headers={"Content-Type":"application/json","Authorization":"Bearer "+key};
+  if(!isIOS){ headers["HTTP-Referer"]=window.location.origin||"https://cuentacuentos.app"; headers["X-Title"]="Cuentacuentos"; }
+  let lastErr="Error desconocido";
+  for(let i=0;i<MODELS.length;i++){
+    const model=MODELS[(modelIdx+i)%MODELS.length];
+    try{
+      const res=await fetch("https://openrouter.ai/api/v1/chat/completions",{
+        method:"POST",headers,
+        body:JSON.stringify({model,max_tokens:1000,messages:[{role:"user",content:prompt}]})
       });
-
-      if (res.status === 401 || res.status === 403) {
-        openKeyOverlay();
-        throw new Error("API Key inválida — comprueba tu clave en openrouter.ai/keys");
-      }
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        lastErr = err.error?.message || ("Error " + res.status);
-        if (lastErr.includes("No endpoints") || lastErr.includes("model") || res.status === 404) {
-          modelIdx = (modelIdx + i + 1) % MODELS.length;
-          continue;
-        }
+      if(res.status===401||res.status===403){ openKeyOverlay(); throw new Error("API Key inválida — comprueba tu clave en openrouter.ai/keys"); }
+      if(!res.ok){
+        const err=await res.json().catch(()=>({}));
+        lastErr=err.error?.message||("Error "+res.status);
+        if(lastErr.includes("No endpoints")||lastErr.includes("model")||res.status===404){ modelIdx=(modelIdx+i+1)%MODELS.length; continue; }
         throw new Error(lastErr);
       }
-
-      const data = await res.json();
-      const text = data.choices?.[0]?.message?.content || "";
-      if (!text) { lastErr = "Respuesta vacía"; continue; }
+      const data=await res.json();
+      const text=data.choices?.[0]?.message?.content||"";
+      if(!text){ lastErr="Respuesta vacía"; continue; }
       return text;
-
-    } catch (e) {
-      if (e.message.includes("inválida")) throw e;
-      lastErr = e.message || "Fallo de red";
+    } catch(e){
+      if(e.message.includes("inválida")) throw e;
+      lastErr=e.message||"Fallo de red";
     }
   }
-  throw new Error(lastErr + " — Comprueba tu conexión a internet.");
+  throw new Error(lastErr+" — Comprueba tu conexión a internet.");
 }
 
 async function genStory(choiceCtx=""){
+  const key=getKey();
+
+  // Sin API key → cuento local directamente (instantáneo, sin red)
+  if(!key) return genStoryLocal();
+
+  // Con API key → llamar a la IA para un cuento único
   const {char,cat,profile,mode}=S;
-  const mi = mode==="baby"
+  const mi=mode==="baby"
     ? "Escribe para niños de 2-5 años. Frases MUY cortas (máx 8 palabras). Vocabulario simple. Onomatopeyas. Máximo 3 párrafos."
     : "Escribe para niños de 6-8 años. Frases cortas. Máximo 4 párrafos. Vocabulario sencillo.";
-
-  const p = choiceCtx
+  const p=choiceCtx
     ? `Continúa el cuento de ${char.name} para ${profile.name}. Categoría: ${cat.label}. ${mi}
 El niño eligió: "${choiceCtx}"
 RESPONDE SOLO EN JSON:
@@ -681,12 +730,13 @@ RESPONDE SOLO EN JSON:
 {"title":"Título","paragraphs":["p1","p2"],"question":"¿Qué hace ${profile.name} ahora?","choices":[{"emoji":"🌟","text":"Opción 1"},{"emoji":"🌈","text":"Opción 2"},{"emoji":"⭐","text":"Opción 3"}]}`;
 
   try{
-    const txt = await callAI(p);
+    const txt=await callAI(p);
+    S.usingLocal=false;
     return JSON.parse(txt.replace(/```json|```/g,"").trim());
   } catch(e){
-    console.error(e);
-    showErr(e.message);
-    return null;
+    console.warn("IA no disponible, usando cuento clásico:",e.message);
+    // Fallback automático al cuento local si la IA falla
+    return genStoryLocal();
   }
 }
 
@@ -712,18 +762,18 @@ async function loadStory(){
   if(S.mode==="baby") document.getElementById("hb-title").textContent=S.title;
   else                document.getElementById("hc-title").textContent=S.title;
   setLoad(false);
+  updateStoryMeta();
   if(S.mode==="baby"){ S.parasRef=[]; revealBaby(data.paragraphs||[],0,data.question); }
   else revealChild(data.paragraphs||[]);
 }
 
-// -- Child --
 let cTimers=[];
 function revealChild(newP){
   newP.forEach((txt,i)=>{
     const t=setTimeout(()=>{
       addParaChild(txt);
       if(i===newP.length-1) cTimers.push(setTimeout(()=>showChoices(),600));
-    }, i*900);
+    },i*900);
     cTimers.push(t);
   });
 }
@@ -736,15 +786,14 @@ function addParaChild(txt){
   S.paras.push(txt); scrollEnd();
 }
 
-// -- Baby --
-function revealBaby(paras, startIdx, question){
+function revealBaby(paras,startIdx,question){
   let i=0;
   const next=()=>{
     if(i>=paras.length){
       speak(question||"¿Qué hacemos ahora?",9000,()=>setTimeout(()=>showChoices(),300));
       return;
     }
-    const gi=startIdx+i, txt=paras[i];
+    const gi=startIdx+i,txt=paras[i];
     S.parasRef.push(txt);
     addParaBaby(txt,gi); i++;
     speak(txt,gi,()=>setTimeout(next,350));
@@ -767,7 +816,6 @@ function addParaBaby(txt,idx){
   S.paras.push(txt); scrollEnd();
 }
 
-// -- Choices --
 function showChoices(){
   if(!S.story||S.finished) return;
   const con=document.getElementById("story-choices");
@@ -781,7 +829,7 @@ function showChoices(){
     <p style="font-family:'Fredoka One',cursive;font-size:${isBaby?21:20}px;color:#333;margin:0 0 ${isBaby?18:14}px;text-align:center">${S.story.question}</p>`;
   const cd=document.createElement("div");
   cd.style.cssText=`display:flex;flex-direction:column;gap:${isBaby?13:10}px`;
-  const colors=["#FF6B9D","#4ECDC4","#FFB347"], shadows=["#cc4477","#2aa39b","#cc8800"];
+  const colors=["#FF6B9D","#4ECDC4","#FFB347"],shadows=["#cc4477","#2aa39b","#cc8800"];
   (S.story.choices||[]).forEach((c,i)=>{
     const b=document.createElement("button");
     b.className="choice-btn";
@@ -814,20 +862,20 @@ async function pickChoice(choice){
   const data=await genStory(choice.text);
   if(!data) return;
   S.story=data; setLoad(false);
-  if(S.mode==="baby") revealBaby(data.paragraphs||[], S.parasRef.length, data.question);
+  updateStoryMeta();
+  if(S.mode==="baby") revealBaby(data.paragraphs||[],S.parasRef.length,data.question);
   else revealChild(data.paragraphs||[]);
 }
 
 function showEnd(){
   S.finished=true;
   const isBaby=S.mode==="baby";
-  document.getElementById("end-em").textContent = isBaby?"🌟":"🏆";
-  document.getElementById("end-txt").textContent = isBaby?"¡Muy bien!":"¡Cuento terminado!";
+  document.getElementById("end-em").textContent=isBaby?"🌟":"🏆";
+  document.getElementById("end-txt").textContent=isBaby?"¡Muy bien!":"¡Cuento terminado!";
   document.getElementById("story-end").classList.remove("hidden");
   if(!S.replayMode){
     saveStoryToHistory();
-    const h = getHistory();
-    if(h.length > 0) document.getElementById("replay-btn").classList.remove("hidden");
+    if(getHistory().length>0) document.getElementById("replay-btn").classList.remove("hidden");
   }
   scrollEnd();
 }
@@ -841,27 +889,25 @@ function goHome(){
 function setLoad(v){
   S.loading=v;
   const el=document.getElementById("story-load");
-  v ? el.classList.remove("hidden") : el.classList.add("hidden");
-
+  v?el.classList.remove("hidden"):el.classList.add("hidden");
   if(v){
-    const msgs = S.mode==="baby" ? LOAD_MSGS_BABY : LOAD_MSGS_CHILD;
-    const em   = S.char?.em || (S.mode==="baby" ? "⭐" : "✍️");
-    loadMsgIdx = 0;
-    document.getElementById("load-em").textContent  = em;
-    document.getElementById("load-txt").textContent = msgs[0];
+    const msgs=S.mode==="baby"?LOAD_MSGS_BABY:LOAD_MSGS_CHILD;
+    const em=S.char?.em||(S.mode==="baby"?"⭐":"✍️");
+    loadMsgIdx=0;
+    document.getElementById("load-em").textContent=em;
+    document.getElementById("load-txt").textContent=msgs[0];
     if(loadMsgTimer) clearInterval(loadMsgTimer);
-    loadMsgTimer = setInterval(()=>{
-      loadMsgIdx = (loadMsgIdx + 1) % msgs.length;
-      const txt = document.getElementById("load-txt");
-      txt.style.opacity = "0";
-      setTimeout(()=>{ txt.textContent = msgs[loadMsgIdx]; txt.style.opacity = "1"; }, 200);
-    }, 2200);
+    loadMsgTimer=setInterval(()=>{
+      loadMsgIdx=(loadMsgIdx+1)%msgs.length;
+      const txt=document.getElementById("load-txt");
+      txt.style.opacity="0";
+      setTimeout(()=>{ txt.textContent=msgs[loadMsgIdx]; txt.style.opacity="1"; },200);
+    },2200);
     scrollEnd();
   } else {
     if(loadMsgTimer){ clearInterval(loadMsgTimer); loadMsgTimer=null; }
   }
 }
-
 function scrollEnd(){
   setTimeout(()=>document.getElementById("scroll-anchor")?.scrollIntoView({behavior:"smooth"}),60);
 }
@@ -874,9 +920,7 @@ function speak(txt,idx,onDone){
   u.lang="es-ES"; u.rate=0.82; u.pitch=1.2;
   setSpeaking(true,idx);
   let done=false;
-  const safetyTimer = setTimeout(()=>{
-    if(!done){ done=true; setSpeaking(false); onDone?.(); }
-  }, Math.max(txt.length * 120, 3000));
+  const safetyTimer=setTimeout(()=>{ if(!done){ done=true; setSpeaking(false); onDone?.(); }},Math.max(txt.length*120,3000));
   u.onend =()=>{ if(!done){ done=true; clearTimeout(safetyTimer); setSpeaking(false); onDone?.(); }};
   u.onerror=()=>{ if(!done){ done=true; clearTimeout(safetyTimer); setSpeaking(false); onDone?.(); }};
   window.speechSynthesis.speak(u);
@@ -912,7 +956,11 @@ renderProfiles();
 stars("st-profiles");
 refreshKeyBtn();
 refreshHistoryBtn();
-if(!getKey()) openKeyOverlay();
+// Mostrar overlay solo en la primera visita, como sugerencia (no obligatorio)
+if(!getKey() && !localStorage.getItem("cc_visited")){
+  localStorage.setItem("cc_visited","1");
+  openKeyOverlay();
+}
 </script>
 </body>
 </html>
